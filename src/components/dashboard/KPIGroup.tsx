@@ -1,7 +1,14 @@
 "use client";
 
 import { m } from "framer-motion";
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, Users, Wallet } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  CreditCard,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { formatCurrency, formatPercentage, cn } from "@/lib/utils";
 
@@ -147,11 +154,7 @@ function KPICard({
       <div>
         <p className="text-sm text-muted-foreground mb-1">{title}</p>
         <p className="text-2xl lg:text-3xl font-bold tracking-tight">
-          <AnimatedNumber
-            value={value}
-            duration={1.2}
-            formatValue={format}
-          />
+          <AnimatedNumber value={value} duration={1.2} formatValue={format} />
         </p>
       </div>
     </m.div>

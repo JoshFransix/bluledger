@@ -37,7 +37,8 @@ export function AnimatedCard({
       className={cn(
         "bg-card rounded-xl border border-border",
         "transition-colors duration-300",
-        hover && "hover:border-primary/30 hover:shadow-lg dark:hover:shadow-primary/5",
+        hover &&
+          "hover:border-primary/30 hover:shadow-lg dark:hover:shadow-primary/5",
         className
       )}
     >

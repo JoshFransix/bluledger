@@ -1,7 +1,13 @@
 import { Suspense } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/Card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/Card";
 import {
   DynamicRevenueChart,
   DynamicExpensesChart,
@@ -38,15 +44,19 @@ export default async function ReportsPage() {
         description="Detailed analytics and insights for your business"
       >
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                             bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium">
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-lg 
+                             bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium"
+          >
             <Calendar className="w-4 h-4" />
             <span className="hidden sm:inline">Last 12 months</span>
             <ChevronDown className="w-4 h-4" />
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg 
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-lg 
                              bg-primary text-primary-foreground hover:bg-primary/90 
-                             transition-colors text-sm font-medium">
+                             transition-colors text-sm font-medium"
+          >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export PDF</span>
           </button>

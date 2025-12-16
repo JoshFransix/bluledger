@@ -63,8 +63,12 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-sm">{transaction.description}</p>
-                    <p className="text-xs text-muted-foreground">{transaction.id}</p>
+                    <p className="font-medium text-sm">
+                      {transaction.description}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {transaction.id}
+                    </p>
                   </div>
                 </div>
               </td>
@@ -85,7 +89,9 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                 <span
                   className={cn(
                     "font-semibold text-sm",
-                    transaction.type === "income" ? "text-success" : "text-foreground"
+                    transaction.type === "income"
+                      ? "text-success"
+                      : "text-foreground"
                   )}
                 >
                   {transaction.type === "income" ? "+" : "-"}

@@ -97,7 +97,11 @@ export function RevenueChart({ data }: RevenueChartProps) {
               borderRadius: "12px",
               boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
             }}
-            labelStyle={{ color: colors.text, fontWeight: 600, marginBottom: 4 }}
+            labelStyle={{
+              color: colors.text,
+              fontWeight: 600,
+              marginBottom: 4,
+            }}
             formatter={(value: number, name: string) => [
               `$${value.toLocaleString()}`,
               name === "revenue" ? "Revenue" : "Target",

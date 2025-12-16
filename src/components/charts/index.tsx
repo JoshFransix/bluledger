@@ -11,22 +11,32 @@ function ChartSkeleton() {
 }
 
 export const DynamicRevenueChart = dynamic(
-  () => import("@/components/charts/RevenueChart").then((mod) => mod.RevenueChart),
+  () =>
+    import("@/components/charts/RevenueChart").then((mod) => mod.RevenueChart),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 
 export const DynamicExpensesChart = dynamic(
-  () => import("@/components/charts/ExpensesChart").then((mod) => mod.ExpensesChart),
+  () =>
+    import("@/components/charts/ExpensesChart").then(
+      (mod) => mod.ExpensesChart
+    ),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 
 export const DynamicCashflowChart = dynamic(
-  () => import("@/components/charts/CashflowChart").then((mod) => mod.CashflowChart),
+  () =>
+    import("@/components/charts/CashflowChart").then(
+      (mod) => mod.CashflowChart
+    ),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 
 export const DynamicExpensesCategoryChart = dynamic(
-  () => import("@/components/charts/ExpensesCategoryChart").then((mod) => mod.ExpensesCategoryChart),
+  () =>
+    import("@/components/charts/ExpensesCategoryChart").then(
+      (mod) => mod.ExpensesCategoryChart
+    ),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 

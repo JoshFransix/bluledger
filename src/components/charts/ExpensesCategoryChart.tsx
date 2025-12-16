@@ -22,7 +22,14 @@ interface ExpensesCategoryChartProps {
   data: ExpenseCategory[];
 }
 
-const COLORS = ["#3B82F6", "#22C55E", "#F59E0B", "#EF4444", "#A855F7", "#EC4899"];
+const COLORS = [
+  "#3B82F6",
+  "#22C55E",
+  "#F59E0B",
+  "#EF4444",
+  "#A855F7",
+  "#EC4899",
+];
 
 export function ExpensesCategoryChart({ data }: ExpensesCategoryChartProps) {
   const { theme } = useTheme();
@@ -72,7 +79,10 @@ export function ExpensesCategoryChart({ data }: ExpensesCategoryChartProps) {
             animationEasing="ease-out"
           >
             {data.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
             ))}
           </Pie>
           <Tooltip

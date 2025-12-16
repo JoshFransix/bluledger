@@ -66,7 +66,12 @@ const secondaryNavItems = [
   },
 ];
 
-export function Sidebar({ isCollapsed, onToggle, isMobile, onClose }: SidebarProps) {
+export function Sidebar({
+  isCollapsed,
+  onToggle,
+  isMobile,
+  onClose,
+}: SidebarProps) {
   const pathname = usePathname();
 
   const sidebarVariants = {
@@ -94,9 +99,15 @@ export function Sidebar({ isCollapsed, onToggle, isMobile, onClose }: SidebarPro
     >
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-sidebar-border">
-        <Link href="/dashboard" className="flex items-center gap-3" onClick={handleNavClick}>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent 
-                          flex items-center justify-center shadow-lg glow-blue-subtle">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-3"
+          onClick={handleNavClick}
+        >
+          <div
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent 
+                          flex items-center justify-center shadow-lg glow-blue-subtle"
+          >
             <Wallet className="w-5 h-5 text-white" />
           </div>
           <AnimatePresence mode="wait">
@@ -242,7 +253,9 @@ function NavItem({ item, isActive, isCollapsed, onClick }: NavItemProps) {
           isCollapsed && "justify-center"
         )}
       >
-        <Icon className={cn("w-5 h-5 flex-shrink-0", isActive && "text-primary")} />
+        <Icon
+          className={cn("w-5 h-5 flex-shrink-0", isActive && "text-primary")}
+        />
         <AnimatePresence mode="wait">
           {!isCollapsed && (
             <m.span

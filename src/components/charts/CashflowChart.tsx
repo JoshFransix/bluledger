@@ -105,7 +105,11 @@ export function CashflowChart({ data }: CashflowChartProps) {
               borderRadius: "12px",
               boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
             }}
-            labelStyle={{ color: colors.text, fontWeight: 600, marginBottom: 4 }}
+            labelStyle={{
+              color: colors.text,
+              fontWeight: 600,
+              marginBottom: 4,
+            }}
             formatter={(value: number, name: string) => {
               const labels: Record<string, string> = {
                 inflow: "Cash Inflow",
@@ -114,7 +118,9 @@ export function CashflowChart({ data }: CashflowChartProps) {
               };
               return [`$${value.toLocaleString()}`, labels[name] || name];
             }}
-            cursor={{ fill: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" }}
+            cursor={{
+              fill: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+            }}
           />
           <Legend
             verticalAlign="top"

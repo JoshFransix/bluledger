@@ -54,14 +54,18 @@ export default async function DashboardPage() {
         title="Dashboard"
         description="Welcome back! Here's what's happening with your finances."
       >
-        <button className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                           bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium">
+        <button
+          className="flex items-center gap-2 px-4 py-2 rounded-lg 
+                           bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium"
+        >
           <Filter className="w-4 h-4" />
           <span className="hidden sm:inline">Filters</span>
         </button>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-lg 
+        <button
+          className="flex items-center gap-2 px-4 py-2 rounded-lg 
                            bg-primary text-primary-foreground hover:bg-primary/90 
-                           transition-colors text-sm font-medium">
+                           transition-colors text-sm font-medium"
+        >
           <Download className="w-4 h-4" />
           <span className="hidden sm:inline">Export</span>
         </button>
@@ -111,8 +115,10 @@ export default async function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Cashflow Timeline</CardTitle>
             <div className="flex items-center gap-2">
-              <select className="px-3 py-1.5 rounded-lg bg-secondary border-0 text-sm 
-                                 focus:outline-none focus:ring-2 focus:ring-primary">
+              <select
+                className="px-3 py-1.5 rounded-lg bg-secondary border-0 text-sm 
+                                 focus:outline-none focus:ring-2 focus:ring-primary"
+              >
                 <option value="12m">Last 12 months</option>
                 <option value="6m">Last 6 months</option>
                 <option value="3m">Last 3 months</option>
@@ -137,8 +143,10 @@ export default async function DashboardPage() {
                 Your latest financial activities
               </p>
             </div>
-            <button className="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 
-                               transition-colors text-sm font-medium">
+            <button
+              className="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 
+                               transition-colors text-sm font-medium"
+            >
               View All
             </button>
           </CardHeader>
