@@ -7,7 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
 import { CreateTransactionModal } from "@/components/modals/CreateTransactionModal";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Plus,
   Filter,
@@ -21,6 +22,7 @@ import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { m } from "framer-motion";
 
 export default function TransactionsPage() {
+  const searchParams = useSearchParams();
   const { transactions, isLoading: transactionsLoading } = useTransactions();
   const { accounts, isLoading: accountsLoading } = useAccounts();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
@@ -31,6 +33,14 @@ export default function TransactionsPage() {
     "ALL" | "INCOME" | "EXPENSE" | "TRANSFER"
   >("ALL");
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+
+  // Handle URL params for account filtering
+  useEffect(() => {
+    const accountIdFromUrl = searchParams.get("accountId");
+    if (accountIdFromUrl && accounts.some(acc => acc.id === accountIdFromUrl)) {
+      setSelectedAccountId(accountIdFromUrl);
+    }
+  }, [searchParams, accounts]);
 
   const selectedAccount = useMemo(() => {
     return accounts.find((acc) => acc.id === selectedAccountId);
@@ -66,6 +76,44 @@ export default function TransactionsPage() {
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   }, [transactions, selectedAccountId, filterType, searchQuery]);
+
+  const handleExport = () => {
+    // Export filtered transactions as CSV
+    const headers = [
+      "Date",
+      "Description",
+      "Type",
+      "Category",
+      "Amount",
+      "Account",
+    ];
+    const csvData = filteredTransactions.map((t) => {
+      const account = selectedAccount?.name || "Multiple";
+      return [
+        new Date(t.date).toLocaleDateString(),
+        t.description || "",
+        t.type,
+        t.category || "",
+        t.amount,
+        account,
+      ];
+    });
+
+    const csvContent = [
+      headers.join(","),
+      ...csvData.map((row) => row.join(",")),
+    ].join("\\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `transactions-${selectedAccount?.name || "all"}-${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const isLoading = transactionsLoading || accountsLoading;
 
@@ -194,10 +242,11 @@ export default function TransactionsPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
-                      <Filter className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                    <button
+                      onClick={handleExport}
+                      disabled={filteredTransactions.length === 0}
+                      className="p-2 rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                       <Download className="w-4 h-4" />
                     </button>
                   </div>

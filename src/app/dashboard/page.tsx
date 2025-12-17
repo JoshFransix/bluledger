@@ -55,6 +55,32 @@ export default function DashboardPage() {
   const { accounts, isLoading: accountsLoading } = useAccounts();
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const handleExport = () => {
+    // Export transactions as CSV
+    const headers = ["Date", "Description", "Type", "Category", "Amount"];
+    const csvData = transactions.map((t) => [
+      new Date(t.date).toLocaleDateString(),
+      t.description || "",
+      t.type,
+      t.category || "",
+      t.amount,
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...csvData.map((row) => row.join(",")),
+    ].join("\\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `transactions-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   // Calculate KPI data from real transactions and accounts
   const kpiData = useMemo(() => {
@@ -240,6 +266,7 @@ export default function DashboardPage() {
           description="Welcome back! Here's what's happening with your finances."
         >
           <button
+            onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg 
                            bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium"
           >
@@ -247,9 +274,11 @@ export default function DashboardPage() {
             <span className="hidden sm:inline">Filters</span>
           </button>
           <button
+            onClick={handleExport}
+            disabled={transactions.length === 0}
             className="flex items-center gap-2 px-4 py-2 rounded-lg 
                            bg-primary text-primary-foreground hover:bg-primary/90 
-                           transition-colors text-sm font-medium"
+                           transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export</span>
