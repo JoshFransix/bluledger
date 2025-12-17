@@ -93,12 +93,15 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
         {/* Main Content - With padding for fixed sidebar */}
         <div
-          className={`flex flex-col min-h-screen transition-all duration-300 ${
+          className={`flex flex-col h-screen transition-all duration-300 ${
             sidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
           }`}
         >
           <Navbar onMenuClick={() => setMobileMenuOpen(true)} title={title} />
-          <m.main layout className="flex-1 p-4 lg:p-6 xl:p-8 overflow-x-hidden">
+          <m.main
+            layout
+            className="flex-1 p-4 lg:p-6 xl:p-8 overflow-y-auto overflow-x-hidden"
+          >
             {children}
           </m.main>
         </div>

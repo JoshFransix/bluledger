@@ -5,6 +5,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
 import { X } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
+import { Input, Select, SelectItem, Textarea, Button } from "@heroui/react";
 import type { TransactionType } from "@/types/api";
 
 interface CreateTransactionModalProps {
@@ -14,6 +15,12 @@ interface CreateTransactionModalProps {
   defaultType?: TransactionType;
   defaultAccountId?: string;
 }
+
+const transactionTypes = [
+  { value: "INCOME", label: "Income" },
+  { value: "EXPENSE", label: "Expense" },
+  { value: "TRANSFER", label: "Transfer" },
+];
 
 export function CreateTransactionModal({
   isOpen,
@@ -29,6 +36,13 @@ export function CreateTransactionModal({
   const [transactionType, setTransactionType] =
     useState<TransactionType>(defaultType);
 
+  const [amount, setAmount] = useState("");
+  const [fromAccountId, setFromAccountId] = useState(defaultAccountId || "");
+  const [toAccountId, setToAccountId] = useState(defaultAccountId || "");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+
   const activeAccounts = accounts.filter((acc) => acc.isActive);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -37,26 +51,32 @@ export function CreateTransactionModal({
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
-      const amount = parseFloat(formData.get("amount") as string);
+      const amountNum = parseFloat(amount);
 
-      if (amount <= 0) {
+      if (amountNum <= 0) {
         throw new Error("Amount must be greater than zero");
       }
 
       await createTransaction({
-        type: formData.get("type") as TransactionType,
-        amount,
-        currency: (formData.get("currency") as string) || "USD",
-        description: (formData.get("description") as string) || undefined,
-        category: (formData.get("category") as string) || undefined,
-        date: (formData.get("date") as string) || new Date().toISOString(),
-        fromAccountId: (formData.get("fromAccountId") as string) || undefined,
-        toAccountId: (formData.get("toAccountId") as string) || undefined,
+        type: transactionType,
+        amount: amountNum,
+        currency: "USD",
+        description: description || undefined,
+        category: category || undefined,
+        date: date || new Date().toISOString(),
+        fromAccountId: fromAccountId || undefined,
+        toAccountId: toAccountId || undefined,
       });
 
       onSuccess?.();
       onClose();
+      // Reset form
+      setAmount("");
+      setFromAccountId("");
+      setToAccountId("");
+      setCategory("");
+      setDescription("");
+      setDate(new Date().toISOString().split("T")[0]);
     } catch (err: unknown) {
       const error = err as {
         response?: { data?: { message?: string } };
@@ -81,15 +101,17 @@ export function CreateTransactionModal({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               onClick={onClose}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
             />
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
               <m.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md p-6"
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md p-6 pointer-events-auto"
               >
                 <h2 className="text-xl font-semibold mb-4">
                   No Accounts Available
@@ -98,12 +120,9 @@ export function CreateTransactionModal({
                   You need to create at least one account before recording
                   transactions.
                 </p>
-                <button
-                  onClick={onClose}
-                  className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
+                <Button onPress={onClose} color="primary" className="w-full">
                   Close
-                </button>
+                </Button>
               </m.div>
             </div>
           </>
@@ -120,22 +139,25 @@ export function CreateTransactionModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <m.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden"
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden pointer-events-auto flex flex-col"
             >
-              <div className="flex items-center justify-between p-6 border-b border-border">
+              <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
                 <h2 className="text-xl font-semibold">New Transaction</h2>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                  type="button"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -143,191 +165,169 @@ export function CreateTransactionModal({
 
               <form
                 onSubmit={handleSubmit}
-                className="p-6 space-y-4 overflow-y-auto"
+                className="p-6 space-y-5 overflow-y-auto flex-1"
               >
                 {error && (
-                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                  <m.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm break-words"
+                  >
                     {error}
-                  </div>
+                  </m.div>
                 )}
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Transaction Type <span className="text-destructive">*</span>
-                  </label>
-                  <select
-                    name="type"
-                    required
-                    value={transactionType}
-                    onChange={(e) =>
-                      setTransactionType(e.target.value as TransactionType)
-                    }
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-background
-                             focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                  >
-                    <option value="INCOME">Income</option>
-                    <option value="EXPENSE">Expense</option>
-                    <option value="TRANSFER">Transfer</option>
-                  </select>
-                </div>
+                <Select
+                  label="Transaction Type"
+                  variant="bordered"
+                  selectedKeys={[transactionType]}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as TransactionType;
+                    setTransactionType(selected);
+                  }}
+                  isRequired
+                >
+                  {transactionTypes.map((type) => (
+                    <SelectItem key={type.value}>{type.label}</SelectItem>
+                  ))}
+                </Select>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Amount <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="amount"
-                    required
-                    min="0.01"
-                    step="0.01"
-                    placeholder="0.00"
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-background
-                             focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                  />
-                </div>
+                <Input
+                  type="number"
+                  label="Amount"
+                  variant="bordered"
+                  placeholder="0.00"
+                  value={amount}
+                  onValueChange={setAmount}
+                  isRequired
+                  min="0.01"
+                  step="0.01"
+                />
 
                 {transactionType === "EXPENSE" && (
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      From Account <span className="text-destructive">*</span>
-                    </label>
-                    <select
-                      name="fromAccountId"
-                      required
-                      defaultValue={defaultAccountId}
-                      className="w-full px-4 py-2 rounded-lg border border-border bg-background
-                               focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                    >
-                      <option value="">Select account...</option>
-                      {activeAccounts.map((account) => (
-                        <option key={account.id} value={account.id}>
-                          {account.name} ({account.currency} {account.balance})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <Select
+                    label="From Account"
+                    variant="bordered"
+                    placeholder="Select account..."
+                    selectedKeys={fromAccountId ? [fromAccountId] : []}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0] as string;
+                      setFromAccountId(selected);
+                    }}
+                    isRequired
+                  >
+                    {activeAccounts.map((account) => (
+                      <SelectItem key={account.id}>
+                        {account.name} ({account.currency} {account.balance})
+                      </SelectItem>
+                    ))}
+                  </Select>
                 )}
 
                 {transactionType === "INCOME" && (
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      To Account <span className="text-destructive">*</span>
-                    </label>
-                    <select
-                      name="toAccountId"
-                      required
-                      defaultValue={defaultAccountId}
-                      className="w-full px-4 py-2 rounded-lg border border-border bg-background
-                               focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                    >
-                      <option value="">Select account...</option>
-                      {activeAccounts.map((account) => (
-                        <option key={account.id} value={account.id}>
-                          {account.name} ({account.currency} {account.balance})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <Select
+                    label="To Account"
+                    variant="bordered"
+                    placeholder="Select account..."
+                    selectedKeys={toAccountId ? [toAccountId] : []}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0] as string;
+                      setToAccountId(selected);
+                    }}
+                    isRequired
+                  >
+                    {activeAccounts.map((account) => (
+                      <SelectItem key={account.id}>
+                        {account.name} ({account.currency} {account.balance})
+                      </SelectItem>
+                    ))}
+                  </Select>
                 )}
 
                 {transactionType === "TRANSFER" && (
                   <>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        From Account <span className="text-destructive">*</span>
-                      </label>
-                      <select
-                        name="fromAccountId"
-                        required
-                        className="w-full px-4 py-2 rounded-lg border border-border bg-background
-                                 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                      >
-                        <option value="">Select account...</option>
-                        {activeAccounts.map((account) => (
-                          <option key={account.id} value={account.id}>
-                            {account.name} ({account.currency} {account.balance}
-                            )
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        To Account <span className="text-destructive">*</span>
-                      </label>
-                      <select
-                        name="toAccountId"
-                        required
-                        className="w-full px-4 py-2 rounded-lg border border-border bg-background
-                                 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                      >
-                        <option value="">Select account...</option>
-                        {activeAccounts.map((account) => (
-                          <option key={account.id} value={account.id}>
-                            {account.name} ({account.currency} {account.balance}
-                            )
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <Select
+                      label="From Account"
+                      variant="bordered"
+                      placeholder="Select account..."
+                      selectedKeys={fromAccountId ? [fromAccountId] : []}
+                      onSelectionChange={(keys) => {
+                        const selected = Array.from(keys)[0] as string;
+                        setFromAccountId(selected);
+                      }}
+                      isRequired
+                    >
+                      {activeAccounts.map((account) => (
+                        <SelectItem key={account.id}>
+                          {account.name} ({account.currency} {account.balance})
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    <Select
+                      label="To Account"
+                      variant="bordered"
+                      placeholder="Select account..."
+                      selectedKeys={toAccountId ? [toAccountId] : []}
+                      onSelectionChange={(keys) => {
+                        const selected = Array.from(keys)[0] as string;
+                        setToAccountId(selected);
+                      }}
+                      isRequired
+                    >
+                      {activeAccounts.map((account) => (
+                        <SelectItem key={account.id}>
+                          {account.name} ({account.currency} {account.balance})
+                        </SelectItem>
+                      ))}
+                    </Select>
                   </>
                 )}
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Category
-                  </label>
-                  <input
-                    type="text"
-                    name="category"
-                    placeholder="e.g., Groceries, Salary"
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-background
-                             focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                  />
-                </div>
+                <Input
+                  label="Category"
+                  variant="bordered"
+                  placeholder="e.g., Groceries, Salary"
+                  value={category}
+                  onValueChange={setCategory}
+                  description="Optional"
+                />
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    rows={2}
-                    placeholder="Add notes..."
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-background
-                             focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
-                  />
-                </div>
+                <Textarea
+                  label="Description"
+                  variant="bordered"
+                  placeholder="Add notes..."
+                  value={description}
+                  onValueChange={setDescription}
+                  minRows={2}
+                  maxRows={4}
+                  description="Optional"
+                />
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Date</label>
-                  <input
-                    type="date"
-                    name="date"
-                    defaultValue={new Date().toISOString().split("T")[0]}
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-background
-                             focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                  />
-                </div>
-
-                <input type="hidden" name="currency" value="USD" />
+                <Input
+                  type="date"
+                  label="Date"
+                  variant="bordered"
+                  value={date}
+                  onValueChange={setDate}
+                />
 
                 <div className="flex gap-3 pt-4">
-                  <button
+                  <Button
                     type="button"
-                    onClick={onClose}
-                    className="flex-1 px-4 py-2 rounded-lg border border-border hover:bg-secondary transition-colors"
+                    variant="bordered"
+                    onPress={onClose}
+                    className="flex-1"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    color="primary"
+                    isLoading={isSubmitting}
+                    className="flex-1"
                   >
-                    {isSubmitting ? "Creating..." : "Create Transaction"}
-                  </button>
+                    Create Transaction
+                  </Button>
                 </div>
               </form>
             </m.div>

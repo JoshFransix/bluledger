@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { KPIGroup } from "@/components/dashboard/KPIGroup";
@@ -233,160 +234,164 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout title="Dashboard">
-      <PageHeader
-        title="Dashboard"
-        description="Welcome back! Here's what's happening with your finances."
-      >
-        <button
-          className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                           bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium"
+      <PageTransition>
+        <PageHeader
+          title="Dashboard"
+          description="Welcome back! Here's what's happening with your finances."
         >
-          <Filter className="w-4 h-4" />
-          <span className="hidden sm:inline">Filters</span>
-        </button>
-        <button
-          className="flex items-center gap-2 px-4 py-2 rounded-lg 
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-lg 
+                           bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium"
+          >
+            <Filter className="w-4 h-4" />
+            <span className="hidden sm:inline">Filters</span>
+          </button>
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-lg 
                            bg-primary text-primary-foreground hover:bg-primary/90 
                            transition-colors text-sm font-medium"
-        >
-          <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Export</span>
-        </button>
-      </PageHeader>
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Export</span>
+          </button>
+        </PageHeader>
 
-      {!isLoading && !hasData ? (
-        <div className="flex items-center justify-center min-h-[500px]">
-          <div className="text-center max-w-md">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <LayoutDashboard className="w-10 h-10 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Welcome to BluLedger</h3>
-            <p className="text-muted-foreground mb-6">
-              Get started by creating your first account and recording your
-              first transaction.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={() => setIsAccountModalOpen(true)}
-                className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-              >
-                Create Account
-              </button>
-              <button
-                onClick={() => setIsTransactionModalOpen(true)}
-                className="px-6 py-3 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium"
-              >
-                Add Transaction
-              </button>
+        {!isLoading && !hasData ? (
+          <div className="flex items-center justify-center min-h-[500px]">
+            <div className="text-center max-w-md">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <LayoutDashboard className="w-10 h-10 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">
+                Welcome to BluLedger
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Get started by creating your first account and recording your
+                first transaction.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => setIsAccountModalOpen(true)}
+                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                >
+                  Create Account
+                </button>
+                <button
+                  onClick={() => setIsTransactionModalOpen(true)}
+                  className="px-6 py-3 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium"
+                >
+                  Add Transaction
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <>
-          {/* KPI Cards */}
-          <section className="mb-6 lg:mb-8">
-            {isLoading ? <KPISkeleton /> : <KPIGroup data={kpiData} />}
-          </section>
+        ) : (
+          <>
+            {/* KPI Cards */}
+            <section className="mb-6 lg:mb-8">
+              {isLoading ? <KPISkeleton /> : <KPIGroup data={kpiData} />}
+            </section>
 
-          {/* Charts Grid */}
-          <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Revenue Overview</CardTitle>
-                <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
-                  <RefreshCw className="w-4 h-4 text-muted-foreground" />
-                </button>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <ChartSkeleton />
-                ) : (
-                  <DynamicRevenueChart data={revenueData} />
-                )}
-              </CardContent>
-            </Card>
+            {/* Charts Grid */}
+            <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Revenue Overview</CardTitle>
+                  <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                    <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <ChartSkeleton />
+                  ) : (
+                    <DynamicRevenueChart data={revenueData} />
+                  )}
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Expenses vs Budget</CardTitle>
-                <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
-                  <RefreshCw className="w-4 h-4 text-muted-foreground" />
-                </button>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <ChartSkeleton />
-                ) : (
-                  <DynamicExpensesChart data={expensesData} />
-                )}
-              </CardContent>
-            </Card>
-          </section>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Expenses vs Budget</CardTitle>
+                  <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                    <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <ChartSkeleton />
+                  ) : (
+                    <DynamicExpensesChart data={expensesData} />
+                  )}
+                </CardContent>
+              </Card>
+            </section>
 
-          {/* Cashflow Timeline */}
-          <section className="mb-6 lg:mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Cashflow Timeline</CardTitle>
-                <div className="flex items-center gap-2">
-                  <select
-                    className="px-3 py-1.5 rounded-lg bg-secondary border-0 text-sm 
+            {/* Cashflow Timeline */}
+            <section className="mb-6 lg:mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Cashflow Timeline</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <select
+                      className="px-3 py-1.5 rounded-lg bg-secondary border-0 text-sm 
                                  focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="12m">Last 12 months</option>
-                    <option value="6m">Last 6 months</option>
-                    <option value="3m">Last 3 months</option>
-                  </select>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <ChartSkeleton />
-                ) : (
-                  <DynamicCashflowChart data={cashflowData} />
-                )}
-              </CardContent>
-            </Card>
-          </section>
+                    >
+                      <option value="12m">Last 12 months</option>
+                      <option value="6m">Last 6 months</option>
+                      <option value="3m">Last 3 months</option>
+                    </select>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <ChartSkeleton />
+                  ) : (
+                    <DynamicCashflowChart data={cashflowData} />
+                  )}
+                </CardContent>
+              </Card>
+            </section>
 
-          {/* Recent Transactions */}
-          <section>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Recent Transactions</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Your latest financial activities
-                  </p>
-                </div>
-                <button
-                  className="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 
+            {/* Recent Transactions */}
+            <section>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Recent Transactions</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Your latest financial activities
+                    </p>
+                  </div>
+                  <button
+                    className="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 
                                transition-colors text-sm font-medium"
-                >
-                  View All
-                </button>
-              </CardHeader>
-              <CardContent className="p-0 lg:p-0">
-                {isLoading ? (
-                  <TableSkeleton />
-                ) : (
-                  <TransactionsTable transactions={formattedTransactions} />
-                )}
-              </CardContent>
-            </Card>
-          </section>
-        </>
-      )}
+                  >
+                    View All
+                  </button>
+                </CardHeader>
+                <CardContent className="p-0 lg:p-0">
+                  {isLoading ? (
+                    <TableSkeleton />
+                  ) : (
+                    <TransactionsTable transactions={formattedTransactions} />
+                  )}
+                </CardContent>
+              </Card>
+            </section>
+          </>
+        )}
 
-      {/* Modals */}
-      <CreateAccountModal
-        isOpen={isAccountModalOpen}
-        onClose={() => setIsAccountModalOpen(false)}
-      />
-      <CreateTransactionModal
-        isOpen={isTransactionModalOpen}
-        onClose={() => setIsTransactionModalOpen(false)}
-      />
+        {/* Modals */}
+        <CreateAccountModal
+          isOpen={isAccountModalOpen}
+          onClose={() => setIsAccountModalOpen(false)}
+        />
+        <CreateTransactionModal
+          isOpen={isTransactionModalOpen}
+          onClose={() => setIsTransactionModalOpen(false)}
+        />
+      </PageTransition>
     </DashboardLayout>
   );
 }

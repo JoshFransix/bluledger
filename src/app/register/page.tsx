@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { m } from "framer-motion";
+import { Input, Button } from "@heroui/react";
+import { Mail, Lock, User } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -45,71 +47,61 @@ export default function RegisterPage() {
             <p className="text-muted-foreground">Create your account</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+              <m.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm"
+              >
                 {error}
-              </div>
+              </m.div>
             )}
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-2">
-                Name (optional)
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                placeholder="John Doe"
-              />
-            </div>
+            <Input
+              type="text"
+              label="Name"
+              variant="bordered"
+              placeholder="John Doe"
+              value={name}
+              onValueChange={setName}
+              description="Optional"
+              startContent={<User className="w-4 h-4 text-default-400" />}
+            />
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                placeholder="you@example.com"
-              />
-            </div>
+            <Input
+              type="email"
+              label="Email"
+              variant="bordered"
+              placeholder="you@example.com"
+              value={email}
+              onValueChange={setEmail}
+              isRequired
+              startContent={<Mail className="w-4 h-4 text-default-400" />}
+            />
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                className="w-full px-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                placeholder="••••••••"
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Must be at least 8 characters
-              </p>
-            </div>
+            <Input
+              type="password"
+              label="Password"
+              variant="bordered"
+              placeholder="••••••••"
+              value={password}
+              onValueChange={setPassword}
+              isRequired
+              minLength={8}
+              description="Must be at least 8 characters"
+              startContent={<Lock className="w-4 h-4 text-default-400" />}
+            />
 
-            <button
+            <Button
               type="submit"
-              disabled={isRegisterLoading}
-              className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              color="primary"
+              isLoading={isRegisterLoading}
+              className="w-full font-medium"
+              size="lg"
             >
               {isRegisterLoading ? "Creating account..." : "Create Account"}
-            </button>
+            </Button>
           </form>
 
           <div className="mt-6 text-center text-sm">

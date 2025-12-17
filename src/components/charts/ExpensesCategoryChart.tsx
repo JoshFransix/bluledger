@@ -56,6 +56,13 @@ export function ExpensesCategoryChart({ data }: ExpensesCategoryChartProps) {
     tooltipBorder: isDark ? "#334155" : "#E2E8F0",
   };
 
+  // Transform data to satisfy Recharts type requirements
+  const chartData = data.map((item) => ({
+    ...item,
+    name: item.category,
+    value: item.amount,
+  }));
+
   return (
     <m.div
       key={animationKey}
@@ -67,7 +74,7 @@ export function ExpensesCategoryChart({ data }: ExpensesCategoryChartProps) {
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             cx="50%"
             cy="50%"
             innerRadius={60}
@@ -78,7 +85,7 @@ export function ExpensesCategoryChart({ data }: ExpensesCategoryChartProps) {
             animationDuration={1500}
             animationEasing="ease-out"
           >
-            {data.map((_, index) => (
+            {chartData.map((_, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={COLORS[index % COLORS.length]}
