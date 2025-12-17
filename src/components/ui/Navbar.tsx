@@ -1,9 +1,12 @@
 "use client";
 
 import { m } from "framer-motion";
-import { Menu, Bell, Search, User } from "lucide-react";
+import { Menu, Bell, Search, User, LogOut } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -11,6 +14,15 @@ interface NavbarProps {
 }
 
 export function Navbar({ onMenuClick, title = "Dashboard" }: NavbarProps) {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
+
   return (
     <m.header
       initial={{ y: -20, opacity: 0 }}
@@ -72,20 +84,45 @@ export function Navbar({ onMenuClick, title = "Dashboard" }: NavbarProps) {
 
         <ThemeToggle />
 
-        <m.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="ml-2 flex items-center gap-2 p-1.5 pr-3 rounded-lg 
-                     hover:bg-secondary transition-colors"
-        >
-          <div
-            className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent
-                          flex items-center justify-center"
+        <div className="relative">
+          <m.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="ml-2 flex items-center gap-2 p-1.5 pr-3 rounded-lg 
+                       hover:bg-secondary transition-colors"
           >
-            <User className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-medium text-sm hidden lg:block">John Doe</span>
-        </m.button>
+            <div
+              className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent
+                            flex items-center justify-center"
+            >
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-medium text-sm hidden lg:block">
+              {user?.name || user?.email?.split("@")[0] || "User"}
+            </span>
+          </m.button>
+
+          {showUserMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-xl py-2 z-50">
+              <div className="px-4 py-2 border-b border-border">
+                <p className="text-sm font-medium truncate">
+                  {user?.name || "User"}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email}
+                </p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary transition-colors text-left"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </m.header>
   );

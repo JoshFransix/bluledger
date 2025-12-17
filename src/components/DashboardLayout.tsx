@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { Sidebar } from "@/components/ui/Sidebar";
 import { Navbar } from "@/components/ui/Navbar";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { X } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -42,60 +43,62 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        <Sidebar
-          isCollapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
-      </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background flex">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block">
+          <Sidebar
+            isCollapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          />
+        </div>
 
-      {/* Mobile Sidebar Overlay */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <m.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed left-0 top-0 z-50 lg:hidden"
-            >
-              <Sidebar
-                isCollapsed={false}
-                onToggle={() => {}}
-                isMobile
-                onClose={() => setMobileMenuOpen(false)}
-              />
-              <button
+        {/* Mobile Sidebar Overlay */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              <m.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
                 onClick={() => setMobileMenuOpen(false)}
-                className="absolute top-4 right-4 p-2 rounded-lg 
-                           bg-secondary hover:bg-secondary/80 transition-colors"
-                aria-label="Close menu"
+              />
+              <m.div
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed left-0 top-0 z-50 lg:hidden"
               >
-                <X className="w-5 h-5" />
-              </button>
-            </m.div>
-          </>
-        )}
-      </AnimatePresence>
+                <Sidebar
+                  isCollapsed={false}
+                  onToggle={() => {}}
+                  isMobile
+                  onClose={() => setMobileMenuOpen(false)}
+                />
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="absolute top-4 right-4 p-2 rounded-lg 
+                             bg-secondary hover:bg-secondary/80 transition-colors"
+                  aria-label="Close menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </m.div>
+            </>
+          )}
+        </AnimatePresence>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <Navbar onMenuClick={() => setMobileMenuOpen(true)} title={title} />
-        <m.main layout className="flex-1 p-4 lg:p-6 xl:p-8 overflow-x-hidden">
-          {children}
-        </m.main>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <Navbar onMenuClick={() => setMobileMenuOpen(true)} title={title} />
+          <m.main layout className="flex-1 p-4 lg:p-6 xl:p-8 overflow-x-hidden">
+            {children}
+          </m.main>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
