@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { m, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -15,8 +15,13 @@ import {
   CreditCard,
   HelpCircle,
   LogOut,
+  Building2,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useOrganizations } from "@/hooks/useOrganizations";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -32,14 +37,14 @@ const mainNavItems = [
     icon: LayoutDashboard,
   },
   {
+    title: "Transactions",
+    href: "/transactions",
+    icon: CreditCard,
+  },
+  {
     title: "Reports",
     href: "/reports",
     icon: FileBarChart,
-  },
-  {
-    title: "Transactions",
-    href: "/dashboard",
-    icon: CreditCard,
   },
   {
     title: "Analytics",
@@ -73,6 +78,10 @@ export function Sidebar({
   onClose,
 }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { organizations, currentOrg, setCurrentOrg } = useOrganizations();
+  const { logout } = useAuth();
+  const [showOrgDropdown, setShowOrgDropdown] = useState(false);
 
   const sidebarVariants = {
     expanded: { width: isMobile ? "280px" : "256px" },
@@ -85,6 +94,11 @@ export function Sidebar({
     }
   };
 
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
+
   return (
     <m.aside
       initial={false}
@@ -94,7 +108,9 @@ export function Sidebar({
       className={cn(
         "h-screen bg-sidebar border-r border-sidebar-border flex flex-col",
         "transition-colors duration-300",
-        isMobile ? "fixed left-0 top-0 z-50 shadow-2xl" : "relative"
+        isMobile
+          ? "fixed left-0 top-0 z-50 shadow-2xl"
+          : "fixed left-0 top-0 z-30"
       )}
     >
       {/* Logo */}
@@ -126,6 +142,47 @@ export function Sidebar({
           </AnimatePresence>
         </Link>
       </div>
+
+      {/* Organization Switcher */}
+      {(!isCollapsed || isMobile) && currentOrg && (
+        <div className="px-3 py-3 border-b border-sidebar-border">
+          <div className="relative">
+            <button
+              onClick={() => setShowOrgDropdown(!showOrgDropdown)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors text-left"
+            >
+              <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {currentOrg.name}
+                </p>
+                <p className="text-xs text-muted-foreground">Organization</p>
+              </div>
+              <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            </button>
+
+            {showOrgDropdown && organizations.length > 1 && (
+              <div className="absolute top-full left-0 right-0 mt-1 mx-3 bg-card border border-border rounded-lg shadow-xl py-1 z-50">
+                {organizations.map((org) => (
+                  <button
+                    key={org.id}
+                    onClick={() => {
+                      setCurrentOrg(org.id);
+                      setShowOrgDropdown(false);
+                    }}
+                    className={cn(
+                      "w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors",
+                      org.id === currentOrg.id && "bg-secondary"
+                    )}
+                  >
+                    {org.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Navigation */}
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
@@ -181,6 +238,7 @@ export function Sidebar({
       {/* Bottom Section */}
       <div className="p-3 border-t border-sidebar-border">
         <button
+          onClick={handleLogout}
           className={cn(
             "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg",
             "text-muted-foreground hover:text-foreground hover:bg-secondary/50",

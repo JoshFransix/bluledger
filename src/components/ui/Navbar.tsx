@@ -19,8 +19,18 @@ export function Navbar({ onMenuClick, title = "Dashboard" }: NavbarProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
-    router.push("/login");
+    try {
+      await logout();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Clear local state even if API call fails
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("currentOrgId");
+      }
+      router.push("/login");
+    }
   };
 
   return (

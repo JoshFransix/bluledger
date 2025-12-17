@@ -10,7 +10,7 @@ import {
   DynamicExpensesChart,
   DynamicCashflowChart,
 } from "@/components/charts";
-import { Download, Filter, RefreshCw } from "lucide-react";
+import { Download, Filter, RefreshCw, LayoutDashboard } from "lucide-react";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useMemo } from "react";
@@ -54,42 +54,60 @@ export default function DashboardPage() {
   // Calculate KPI data from real transactions and accounts
   const kpiData = useMemo(() => {
     const now = new Date();
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    
-    const currentMonthTransactions = transactions.filter(t => new Date(t.date) >= lastMonth);
-    const previousMonthTransactions = transactions.filter(t => {
+    const lastMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate()
+    );
+
+    const currentMonthTransactions = transactions.filter(
+      (t) => new Date(t.date) >= lastMonth
+    );
+    const previousMonthTransactions = transactions.filter((t) => {
       const d = new Date(t.date);
-      return d >= new Date(now.getFullYear(), now.getMonth() - 2, now.getDate()) && d < lastMonth;
+      return (
+        d >= new Date(now.getFullYear(), now.getMonth() - 2, now.getDate()) &&
+        d < lastMonth
+      );
     });
 
     const currentRevenue = currentMonthTransactions
-      .filter(t => t.type === 'INCOME')
+      .filter((t) => t.type === "INCOME")
       .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-      
+
     const previousRevenue = previousMonthTransactions
-      .filter(t => t.type === 'INCOME')
+      .filter((t) => t.type === "INCOME")
       .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
     const currentExpenses = currentMonthTransactions
-      .filter(t => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-      
-    const previousExpenses = previousMonthTransactions
-      .filter(t => t.type === 'EXPENSE')
+      .filter((t) => t.type === "EXPENSE")
       .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
-    const totalBalance = accounts.reduce((sum, a) => sum + parseFloat(a.balance), 0);
-    const activeAccounts = accounts.filter(a => a.isActive).length;
+    const previousExpenses = previousMonthTransactions
+      .filter((t) => t.type === "EXPENSE")
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+    const totalBalance = accounts.reduce(
+      (sum, a) => sum + parseFloat(a.balance),
+      0
+    );
+    const activeAccounts = accounts.filter((a) => a.isActive).length;
 
     return {
       totalRevenue: {
         value: currentRevenue,
-        change: previousRevenue > 0 ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 : 0,
+        change:
+          previousRevenue > 0
+            ? ((currentRevenue - previousRevenue) / previousRevenue) * 100
+            : 0,
         trend: (currentRevenue >= previousRevenue ? "up" : "down") as const,
       },
       totalExpenses: {
         value: currentExpenses,
-        change: previousExpenses > 0 ? ((currentExpenses - previousExpenses) / previousExpenses) * 100 : 0,
+        change:
+          previousExpenses > 0
+            ? ((currentExpenses - previousExpenses) / previousExpenses) * 100
+            : 0,
         trend: (currentExpenses <= previousExpenses ? "down" : "up") as const,
       },
       netProfit: {
@@ -108,27 +126,33 @@ export default function DashboardPage() {
   // Prepare revenue chart data
   const revenueData = useMemo(() => {
     const monthlyData: Record<string, number> = {};
-    
+
     transactions
-      .filter(t => t.type === 'INCOME')
-      .forEach(t => {
+      .filter((t) => t.type === "INCOME")
+      .forEach((t) => {
         const date = new Date(t.date);
-        const monthKey = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-        monthlyData[monthKey] = (monthlyData[monthKey] || 0) + parseFloat(t.amount);
+        const monthKey = date.toLocaleString("default", {
+          month: "short",
+          year: "numeric",
+        });
+        monthlyData[monthKey] =
+          (monthlyData[monthKey] || 0) + parseFloat(t.amount);
       });
 
-    return Object.entries(monthlyData).map(([month, value]) => ({ month, value })).slice(-6);
+    return Object.entries(monthlyData)
+      .map(([month, value]) => ({ month, value }))
+      .slice(-6);
   }, [transactions]);
 
   // Prepare expenses chart data
   const expensesData = useMemo(() => {
     const monthlyData: Record<string, { actual: number; budget: number }> = {};
-    
+
     transactions
-      .filter(t => t.type === 'EXPENSE')
-      .forEach(t => {
+      .filter((t) => t.type === "EXPENSE")
+      .forEach((t) => {
         const date = new Date(t.date);
-        const monthKey = date.toLocaleString('default', { month: 'short' });
+        const monthKey = date.toLocaleString("default", { month: "short" });
         if (!monthlyData[monthKey]) {
           monthlyData[monthKey] = { actual: 0, budget: 0 };
         }
@@ -136,48 +160,61 @@ export default function DashboardPage() {
         monthlyData[monthKey].budget = monthlyData[monthKey].actual * 1.2; // Mock budget
       });
 
-    return Object.entries(monthlyData).map(([month, data]) => ({ month, ...data })).slice(-6);
+    return Object.entries(monthlyData)
+      .map(([month, data]) => ({ month, ...data }))
+      .slice(-6);
   }, [transactions]);
 
   // Prepare cashflow chart data
   const cashflowData = useMemo(() => {
-    const monthlyData: Record<string, { month: string; income: number; expenses: number; net: number }> = {};
-    
-    transactions.forEach(t => {
+    const monthlyData: Record<
+      string,
+      { month: string; income: number; expenses: number; net: number }
+    > = {};
+
+    transactions.forEach((t) => {
       const date = new Date(t.date);
-      const monthKey = date.toLocaleString('default', { month: 'short' });
-      
+      const monthKey = date.toLocaleString("default", { month: "short" });
+
       if (!monthlyData[monthKey]) {
-        monthlyData[monthKey] = { month: monthKey, income: 0, expenses: 0, net: 0 };
+        monthlyData[monthKey] = {
+          month: monthKey,
+          income: 0,
+          expenses: 0,
+          net: 0,
+        };
       }
-      
-      if (t.type === 'INCOME') {
+
+      if (t.type === "INCOME") {
         monthlyData[monthKey].income += parseFloat(t.amount);
-      } else if (t.type === 'EXPENSE') {
+      } else if (t.type === "EXPENSE") {
         monthlyData[monthKey].expenses += parseFloat(t.amount);
       }
     });
 
-    return Object.values(monthlyData).map(d => ({
-      ...d,
-      net: d.income - d.expenses,
-    })).slice(-12);
+    return Object.values(monthlyData)
+      .map((d) => ({
+        ...d,
+        net: d.income - d.expenses,
+      }))
+      .slice(-12);
   }, [transactions]);
 
   // Format transactions for display
   const formattedTransactions = useMemo(() => {
-    return transactions.slice(0, 10).map(t => ({
+    return transactions.slice(0, 10).map((t) => ({
       id: t.id,
       description: t.description || `${t.type} Transaction`,
       amount: parseFloat(t.amount),
-      type: t.type === 'INCOME' ? 'income' as const : 'expense' as const,
-      category: t.category || 'Uncategorized',
+      type: t.type === "INCOME" ? ("income" as const) : ("expense" as const),
+      category: t.category || "Uncategorized",
       date: t.date,
-      status: 'completed' as const,
+      status: "completed" as const,
     }));
   }, [transactions]);
 
   const isLoading = transactionsLoading || accountsLoading;
+  const hasData = transactions.length > 0 || accounts.length > 0;
 
   return (
     <DashboardLayout title="Dashboard">
@@ -202,82 +239,123 @@ export default function DashboardPage() {
         </button>
       </PageHeader>
 
-      {/* KPI Cards */}
-      <section className="mb-6 lg:mb-8">
-        {isLoading ? <KPISkeleton /> : <KPIGroup data={kpiData} />}
-      </section>
+      {!isLoading && !hasData ? (
+        <div className="flex items-center justify-center min-h-[500px]">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <LayoutDashboard className="w-10 h-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Welcome to BluLedger</h3>
+            <p className="text-muted-foreground mb-6">
+              Get started by creating your first account and recording your
+              first transaction.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                Create Account
+              </button>
+              <button className="px-6 py-3 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium">
+                Add Transaction
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* KPI Cards */}
+          <section className="mb-6 lg:mb-8">
+            {isLoading ? <KPISkeleton /> : <KPIGroup data={kpiData} />}
+          </section>
 
-      {/* Charts Grid */}
-      <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Revenue Overview</CardTitle>
-            <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
-              <RefreshCw className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? <ChartSkeleton /> : <DynamicRevenueChart data={revenueData} />}
-          </CardContent>
-        </Card>
+          {/* Charts Grid */}
+          <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Revenue Overview</CardTitle>
+                <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                  <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <ChartSkeleton />
+                ) : (
+                  <DynamicRevenueChart data={revenueData} />
+                )}
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Expenses vs Budget</CardTitle>
-            <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
-              <RefreshCw className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? <ChartSkeleton /> : <DynamicExpensesChart data={expensesData} />}
-          </CardContent>
-        </Card>
-      </section>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Expenses vs Budget</CardTitle>
+                <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                  <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <ChartSkeleton />
+                ) : (
+                  <DynamicExpensesChart data={expensesData} />
+                )}
+              </CardContent>
+            </Card>
+          </section>
 
-      {/* Cashflow Timeline */}
-      <section className="mb-6 lg:mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Cashflow Timeline</CardTitle>
-            <div className="flex items-center gap-2">
-              <select
-                className="px-3 py-1.5 rounded-lg bg-secondary border-0 text-sm 
+          {/* Cashflow Timeline */}
+          <section className="mb-6 lg:mb-8">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Cashflow Timeline</CardTitle>
+                <div className="flex items-center gap-2">
+                  <select
+                    className="px-3 py-1.5 rounded-lg bg-secondary border-0 text-sm 
                                  focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="12m">Last 12 months</option>
-                <option value="6m">Last 6 months</option>
-                <option value="3m">Last 3 months</option>
-              </select>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? <ChartSkeleton /> : <DynamicCashflowChart data={cashflowData} />}
-          </CardContent>
-        </Card>
-      </section>
+                  >
+                    <option value="12m">Last 12 months</option>
+                    <option value="6m">Last 6 months</option>
+                    <option value="3m">Last 3 months</option>
+                  </select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <ChartSkeleton />
+                ) : (
+                  <DynamicCashflowChart data={cashflowData} />
+                )}
+              </CardContent>
+            </Card>
+          </section>
 
-      {/* Recent Transactions */}
-      <section>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Transactions</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Your latest financial activities
-              </p>
-            </div>
-            <button
-              className="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 
+          {/* Recent Transactions */}
+          <section>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Recent Transactions</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Your latest financial activities
+                  </p>
+                </div>
+                <button
+                  className="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 
                                transition-colors text-sm font-medium"
-            >
-              View All
-            </button>
-          </CardHeader>
-          <CardContent className="p-0 lg:p-0">
-            {isLoading ? <TableSkeleton /> : <TransactionsTable transactions={formattedTransactions} />}
-          </CardContent>
-        </Card>
-      </section>
+                >
+                  View All
+                </button>
+              </CardHeader>
+              <CardContent className="p-0 lg:p-0">
+                {isLoading ? (
+                  <TableSkeleton />
+                ) : (
+                  <TransactionsTable transactions={formattedTransactions} />
+                )}
+              </CardContent>
+            </Card>
+          </section>
+        </>
+      )}
     </DashboardLayout>
   );
 }

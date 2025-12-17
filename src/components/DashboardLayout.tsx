@@ -44,8 +44,8 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background flex">
-        {/* Desktop Sidebar */}
+      <div className="min-h-screen bg-background">
+        {/* Desktop Sidebar - Fixed */}
         <div className="hidden lg:block">
           <Sidebar
             isCollapsed={sidebarCollapsed}
@@ -91,8 +91,12 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           )}
         </AnimatePresence>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Main Content - With padding for fixed sidebar */}
+        <div
+          className={`flex flex-col min-h-screen transition-all duration-300 ${
+            sidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
+          }`}
+        >
           <Navbar onMenuClick={() => setMobileMenuOpen(true)} title={title} />
           <m.main layout className="flex-1 p-4 lg:p-6 xl:p-8 overflow-x-hidden">
             {children}
