@@ -1,4 +1,5 @@
-import { Suspense } from "react";
+"use client";
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
 import {
@@ -14,13 +15,10 @@ import {
   DynamicCashflowChart,
   DynamicExpensesCategoryChart,
 } from "@/components/charts";
-import {
-  getRevenueData,
-  getExpensesData,
-  getCashflowData,
-  getExpensesByCategory,
-} from "@/lib/data";
-import { Download, Calendar, ChevronDown } from "lucide-react";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useAccounts } from "@/hooks/useAccounts";
+import { useMemo } from "react";
+import { Download, Calendar, ChevronDown, FileBarChart } from "lucide-react";
 
 function ChartSkeleton() {
   return (
@@ -28,34 +26,181 @@ function ChartSkeleton() {
   );
 }
 
-export default async function ReportsPage() {
-  const [revenueData, expensesData, cashflowData, expensesByCategory] =
-    await Promise.all([
-      getRevenueData(),
-      getExpensesData(),
-      getCashflowData(),
-      getExpensesByCategory(),
-    ]);
+export default function ReportsPage() {
+  const { transactions, isLoading: transactionsLoading } = useTransactions();
+  const { accounts, isLoading: accountsLoading } = useAccounts();
+
+  // Calculate summary statistics from real data
+  const summaryStats = useMemo(() => {
+    const now = new Date();
+    const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    
+    const currentYearTransactions = transactions.filter(t => new Date(t.date) >= lastYear);
+    const previousYearStart = new Date(lastYear);
+    previousYearStart.setFullYear(previousYearStart.getFullYear() - 1);
+    const previousYearTransactions = transactions.filter(
+      t => new Date(t.date) >= previousYearStart && new Date(t.date) < lastYear
+    );
+
+    const currentRevenue = currentYearTransactions
+      .filter(t => t.type === "INCOME")
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    
+    const previousRevenue = previousYearTransactions
+      .filter(t => t.type === "INCOME")
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    
+    const currentExpenses = currentYearTransactions
+      .filter(t => t.type === "EXPENSE")
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    
+    const previousExpenses = previousYearTransactions
+      .filter(t => t.type === "EXPENSE")
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+    const netProfit = currentRevenue - currentExpenses;
+    const previousNetProfit = previousRevenue - previousExpenses;
+    const profitMargin = currentRevenue > 0 ? (netProfit / currentRevenue) * 100 : 0;
+    const previousProfitMargin = previousRevenue > 0 ? (previousNetProfit / previousRevenue) * 100 : 0;
+
+    return {
+      revenue: {
+        value: currentRevenue,
+        change: previousRevenue > 0 ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 : 0,
+      },
+      expenses: {
+        value: currentExpenses,
+        change: previousExpenses > 0 ? ((currentExpenses - previousExpenses) / previousExpenses) * 100 : 0,
+      },
+      netProfit: {
+        value: netProfit,
+        change: previousNetProfit > 0 ? ((netProfit - previousNetProfit) / previousNetProfit) * 100 : 0,
+      },
+      profitMargin: {
+        value: profitMargin,
+        change: profitMargin - previousProfitMargin,
+      },
+    };
+  }, [transactions]);
+
+  // Prepare revenue chart data
+  const revenueData = useMemo(() => {
+    const monthlyData: Record<string, number> = {};
+    transactions
+      .filter(t => t.type === "INCOME")
+      .forEach(t => {
+        const date = new Date(t.date);
+        const monthKey = date.toLocaleString("default", { month: "short" });
+        monthlyData[monthKey] = (monthlyData[monthKey] || 0) + parseFloat(t.amount);
+      });
+
+    return Object.entries(monthlyData)
+      .map(([month, value]) => ({
+        month,
+        revenue: value,
+        target: value * 1.1, // 10% above actual as target
+      }))
+      .slice(-12);
+  }, [transactions]);
+
+  // Prepare expenses chart data
+  const expensesData = useMemo(() => {
+    const monthlyData: Record<string, { expenses: number; budget: number }> = {};
+    transactions
+      .filter(t => t.type === "EXPENSE")
+      .forEach(t => {
+        const date = new Date(t.date);
+        const monthKey = date.toLocaleString("default", { month: "short" });
+        if (!monthlyData[monthKey]) {
+          monthlyData[monthKey] = { expenses: 0, budget: 0 };
+        }
+        monthlyData[monthKey].expenses += parseFloat(t.amount);
+        monthlyData[monthKey].budget = monthlyData[monthKey].expenses * 1.15; // 15% buffer
+      });
+
+    return Object.entries(monthlyData)
+      .map(([month, data]) => ({ month, ...data }))
+      .slice(-12);
+  }, [transactions]);
+
+  // Prepare expenses by category
+  const expensesByCategory = useMemo(() => {
+    const categoryData: Record<string, number> = {};
+    transactions
+      .filter(t => t.type === "EXPENSE")
+      .forEach(t => {
+        const category = t.category || "Uncategorized";
+        categoryData[category] = (categoryData[category] || 0) + parseFloat(t.amount);
+      });
+
+    return Object.entries(categoryData)
+      .map(([category, amount]) => ({ category, amount }))
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 6); // Top 6 categories
+  }, [transactions]);
+
+  // Prepare cashflow chart data
+  const cashflowData = useMemo(() => {
+    const monthlyData: Record<string, { month: string; inflow: number; outflow: number; net: number }> = {};
+    transactions.forEach(t => {
+      const date = new Date(t.date);
+      const monthKey = date.toLocaleString("default", { month: "short" });
+
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { month: monthKey, inflow: 0, outflow: 0, net: 0 };
+      }
+
+      if (t.type === "INCOME") {
+        monthlyData[monthKey].inflow += parseFloat(t.amount);
+      } else if (t.type === "EXPENSE") {
+        monthlyData[monthKey].outflow += parseFloat(t.amount);
+      }
+    });
+
+    return Object.values(monthlyData)
+      .map(d => ({ ...d, net: d.inflow - d.outflow }))
+      .slice(-12);
+  }, [transactions]);
+
+  const isLoading = transactionsLoading || accountsLoading;
+  const hasData = transactions.length > 0;
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(value);
+  };
+
+  const formatPercent = (value: number) => {
+    return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+  };
 
   return (
     <DashboardLayout title="Reports">
       <PageHeader
         title="Financial Reports"
-        description="Detailed analytics and insights for your business"
+        description="Detailed analytics and insights from your real transaction data"
       >
         <div className="flex items-center gap-2">
           <button
+            disabled
             className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                             bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium"
+                     bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Date range filter coming soon"
           >
             <Calendar className="w-4 h-4" />
             <span className="hidden sm:inline">Last 12 months</span>
             <ChevronDown className="w-4 h-4" />
           </button>
           <button
+            disabled
             className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                             bg-primary text-primary-foreground hover:bg-primary/90 
-                             transition-colors text-sm font-medium"
+                     bg-primary text-primary-foreground hover:bg-primary/90 
+                     transition-colors text-sm font-medium
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+            title="PDF export coming soon"
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export PDF</span>
@@ -63,98 +208,118 @@ export default async function ReportsPage() {
         </div>
       </PageHeader>
 
-      {/* Summary Cards */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 lg:mb-8">
-        <SummaryCard
-          title="Total Revenue"
-          value="$2,847,563"
-          change="+12.5%"
-          positive
-        />
-        <SummaryCard
-          title="Total Expenses"
-          value="$1,234,567"
-          change="-3.2%"
-          positive
-        />
-        <SummaryCard
-          title="Net Profit"
-          value="$1,612,996"
-          change="+24.8%"
-          positive
-        />
-        <SummaryCard
-          title="Profit Margin"
-          value="56.7%"
-          change="+5.3%"
-          positive
-        />
-      </section>
+      {!isLoading && !hasData ? (
+        <div className="flex items-center justify-center min-h-[500px]">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <FileBarChart className="w-10 h-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">No Data Available</h3>
+            <p className="text-muted-foreground mb-6">
+              Create transactions to see detailed financial reports and analytics
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Summary Cards */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 lg:mb-8">
+            {isLoading ? (
+              [...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 bg-secondary/50 rounded-lg animate-pulse" />
+              ))
+            ) : (
+              <>
+                <SummaryCard
+                  title="Total Revenue"
+                  value={formatCurrency(summaryStats.revenue.value)}
+                  change={formatPercent(summaryStats.revenue.change)}
+                  positive={summaryStats.revenue.change >= 0}
+                />
+                <SummaryCard
+                  title="Total Expenses"
+                  value={formatCurrency(summaryStats.expenses.value)}
+                  change={formatPercent(summaryStats.expenses.change)}
+                  positive={summaryStats.expenses.change <= 0}
+                />
+                <SummaryCard
+                  title="Net Profit"
+                  value={formatCurrency(summaryStats.netProfit.value)}
+                  change={formatPercent(summaryStats.netProfit.change)}
+                  positive={summaryStats.netProfit.change >= 0}
+                />
+                <SummaryCard
+                  title="Profit Margin"
+                  value={`${summaryStats.profitMargin.value.toFixed(1)}%`}
+                  change={formatPercent(summaryStats.profitMargin.change)}
+                  positive={summaryStats.profitMargin.change >= 0}
+                />
+              </>
+            )}
+          </section>
 
-      {/* Revenue Analysis */}
-      <section className="mb-6 lg:mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue Analysis</CardTitle>
-            <CardDescription>
-              Monthly revenue compared to targets over the past year
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<ChartSkeleton />}>
-              <DynamicRevenueChart data={revenueData} />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </section>
+          {/* Revenue Analysis */}
+          <section className="mb-6 lg:mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue Analysis</CardTitle>
+                <CardDescription>
+                  Monthly revenue from your income transactions over the past year
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? <ChartSkeleton /> : <DynamicRevenueChart data={revenueData} />}
+              </CardContent>
+            </Card>
+          </section>
 
-      {/* Expenses Grid */}
-      <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Expenses vs Budget</CardTitle>
-            <CardDescription>
-              Track spending against allocated budgets
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<ChartSkeleton />}>
-              <DynamicExpensesChart data={expensesData} />
-            </Suspense>
-          </CardContent>
-        </Card>
+          {/* Expenses Grid */}
+          <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Expenses vs Budget</CardTitle>
+                <CardDescription>
+                  Track spending with estimated budgets based on your data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? <ChartSkeleton /> : <DynamicExpensesChart data={expensesData} />}
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Expenses by Category</CardTitle>
-            <CardDescription>
-              Breakdown of expenses across different categories
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<ChartSkeleton />}>
-              <DynamicExpensesCategoryChart data={expensesByCategory} />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Expenses by Category</CardTitle>
+                <CardDescription>
+                  Breakdown of expenses across different transaction categories
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <ChartSkeleton />
+                ) : (
+                  <DynamicExpensesCategoryChart data={expensesByCategory} />
+                )}
+              </CardContent>
+            </Card>
+          </section>
 
-      {/* Cashflow */}
-      <section>
-        <Card>
-          <CardHeader>
-            <CardTitle>Cash Flow Analysis</CardTitle>
-            <CardDescription>
-              Track cash inflows, outflows, and net position
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<ChartSkeleton />}>
-              <DynamicCashflowChart data={cashflowData} />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </section>
+          {/* Cashflow */}
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Cash Flow Analysis</CardTitle>
+                <CardDescription>
+                  Track cash inflows, outflows, and net position from your transactions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? <ChartSkeleton /> : <DynamicCashflowChart data={cashflowData} />}
+              </CardContent>
+            </Card>
+          </section>
+        </>
+      )}
     </DashboardLayout>
   );
 }
@@ -173,7 +338,7 @@ function SummaryCard({ title, value, change, positive }: SummaryCardProps) {
       <p className="text-2xl font-bold mb-2">{value}</p>
       <span
         className={`text-sm font-medium ${
-          positive ? "text-success" : "text-destructive"
+          positive ? "text-emerald-600" : "text-rose-600"
         }`}
       >
         {change} from last year

@@ -22,6 +22,20 @@ class OrganizationService {
     return response.data;
   }
 
+  async getSummary(id: string): Promise<{
+    id: string;
+    name: string;
+    accountsCount: number;
+    transactionsCount: number;
+    membersCount: number;
+    totalAssets: number;
+    totalLiabilities: number;
+    netWorth: number;
+  }> {
+    const response = await apiClient.get(`/organizations/${id}/summary`);
+    return response.data;
+  }
+
   setCurrentOrg(orgId: string): void {
     if (typeof window !== 'undefined') {
       localStorage.setItem('currentOrgId', orgId);

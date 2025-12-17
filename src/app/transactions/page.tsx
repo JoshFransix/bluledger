@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
+import { CreateTransactionModal } from "@/components/modals/CreateTransactionModal";
 import { useState, useMemo } from "react";
 import {
   Plus,
@@ -28,6 +29,7 @@ export default function TransactionsPage() {
   const [filterType, setFilterType] = useState<
     "ALL" | "INCOME" | "EXPENSE" | "TRANSFER"
   >("ALL");
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
   const selectedAccount = useMemo(() => {
     return accounts.find((acc) => acc.id === selectedAccountId);
@@ -73,6 +75,7 @@ export default function TransactionsPage() {
         description="Track and manage all your financial transactions"
       >
         <button
+          onClick={() => setIsTransactionModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg 
                      bg-primary text-primary-foreground hover:bg-primary/90 
                      transition-colors text-sm font-medium"
@@ -102,7 +105,13 @@ export default function TransactionsPage() {
                   <p className="text-sm text-muted-foreground mb-3">
                     No accounts yet
                   </p>
-                  <button className="text-sm text-primary hover:underline">
+                  <button
+                    onClick={() => {
+                      // Redirect to dashboard where account creation is
+                      window.location.href = "/dashboard";
+                    }}
+                    className="text-sm text-primary hover:underline"
+                  >
                     Create Account
                   </button>
                 </div>
@@ -240,7 +249,10 @@ export default function TransactionsPage() {
                       ? "Try adjusting your filters"
                       : "Create your first transaction to get started"}
                   </p>
-                  <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                  <button
+                    onClick={() => setIsTransactionModalOpen(true)}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  >
                     <Plus className="w-4 h-4 inline mr-2" />
                     New Transaction
                   </button>
@@ -257,7 +269,7 @@ export default function TransactionsPage() {
                     >
                       <div
                         className={cn(
-                          "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
+                          "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
                           transaction.type === "INCOME" && "bg-emerald-500/10",
                           transaction.type === "EXPENSE" && "bg-rose-500/10",
                           transaction.type === "TRANSFER" && "bg-blue-500/10"
@@ -315,6 +327,13 @@ export default function TransactionsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Modals */}
+      <CreateTransactionModal
+        isOpen={isTransactionModalOpen}
+        onClose={() => setIsTransactionModalOpen(false)}
+        defaultAccountId={selectedAccountId || undefined}
+      />
     </DashboardLayout>
   );
 }

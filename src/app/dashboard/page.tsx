@@ -13,7 +13,9 @@ import {
 import { Download, Filter, RefreshCw, LayoutDashboard } from "lucide-react";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
-import { useMemo } from "react";
+import { CreateAccountModal } from "@/components/modals/CreateAccountModal";
+import { CreateTransactionModal } from "@/components/modals/CreateTransactionModal";
+import { useMemo, useState } from "react";
 
 function ChartSkeleton() {
   return (
@@ -50,6 +52,8 @@ function KPISkeleton() {
 export default function DashboardPage() {
   const { transactions, isLoading: transactionsLoading } = useTransactions();
   const { accounts, isLoading: accountsLoading } = useAccounts();
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
   // Calculate KPI data from real transactions and accounts
   const kpiData = useMemo(() => {
@@ -100,7 +104,10 @@ export default function DashboardPage() {
           previousRevenue > 0
             ? ((currentRevenue - previousRevenue) / previousRevenue) * 100
             : 0,
-        trend: (currentRevenue >= previousRevenue ? "up" : "down") as const,
+        trend:
+          currentRevenue >= previousRevenue
+            ? ("up" as const)
+            : ("down" as const),
       },
       totalExpenses: {
         value: currentExpenses,
@@ -108,7 +115,10 @@ export default function DashboardPage() {
           previousExpenses > 0
             ? ((currentExpenses - previousExpenses) / previousExpenses) * 100
             : 0,
-        trend: (currentExpenses <= previousExpenses ? "down" : "up") as const,
+        trend:
+          currentExpenses <= previousExpenses
+            ? ("down" as const)
+            : ("up" as const),
       },
       netProfit: {
         value: currentRevenue - currentExpenses,
@@ -140,13 +150,18 @@ export default function DashboardPage() {
       });
 
     return Object.entries(monthlyData)
-      .map(([month, value]) => ({ month, value }))
+      .map(([month, value]) => ({
+        month,
+        revenue: value,
+        target: value * 1.1, // Mock target value
+      }))
       .slice(-6);
   }, [transactions]);
 
   // Prepare expenses chart data
   const expensesData = useMemo(() => {
-    const monthlyData: Record<string, { actual: number; budget: number }> = {};
+    const monthlyData: Record<string, { expenses: number; budget: number }> =
+      {};
 
     transactions
       .filter((t) => t.type === "EXPENSE")
@@ -154,10 +169,10 @@ export default function DashboardPage() {
         const date = new Date(t.date);
         const monthKey = date.toLocaleString("default", { month: "short" });
         if (!monthlyData[monthKey]) {
-          monthlyData[monthKey] = { actual: 0, budget: 0 };
+          monthlyData[monthKey] = { expenses: 0, budget: 0 };
         }
-        monthlyData[monthKey].actual += parseFloat(t.amount);
-        monthlyData[monthKey].budget = monthlyData[monthKey].actual * 1.2; // Mock budget
+        monthlyData[monthKey].expenses += parseFloat(t.amount);
+        monthlyData[monthKey].budget = monthlyData[monthKey].expenses * 1.2; // Mock budget
       });
 
     return Object.entries(monthlyData)
@@ -169,7 +184,7 @@ export default function DashboardPage() {
   const cashflowData = useMemo(() => {
     const monthlyData: Record<
       string,
-      { month: string; income: number; expenses: number; net: number }
+      { month: string; inflow: number; outflow: number; net: number }
     > = {};
 
     transactions.forEach((t) => {
@@ -179,23 +194,23 @@ export default function DashboardPage() {
       if (!monthlyData[monthKey]) {
         monthlyData[monthKey] = {
           month: monthKey,
-          income: 0,
-          expenses: 0,
+          inflow: 0,
+          outflow: 0,
           net: 0,
         };
       }
 
       if (t.type === "INCOME") {
-        monthlyData[monthKey].income += parseFloat(t.amount);
+        monthlyData[monthKey].inflow += parseFloat(t.amount);
       } else if (t.type === "EXPENSE") {
-        monthlyData[monthKey].expenses += parseFloat(t.amount);
+        monthlyData[monthKey].outflow += parseFloat(t.amount);
       }
     });
 
     return Object.values(monthlyData)
       .map((d) => ({
         ...d,
-        net: d.income - d.expenses,
+        net: d.inflow - d.outflow,
       }))
       .slice(-12);
   }, [transactions]);
@@ -251,10 +266,16 @@ export default function DashboardPage() {
               first transaction.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium">
+              <button
+                onClick={() => setIsAccountModalOpen(true)}
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+              >
                 Create Account
               </button>
-              <button className="px-6 py-3 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium">
+              <button
+                onClick={() => setIsTransactionModalOpen(true)}
+                className="px-6 py-3 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium"
+              >
                 Add Transaction
               </button>
             </div>
@@ -356,6 +377,16 @@ export default function DashboardPage() {
           </section>
         </>
       )}
+
+      {/* Modals */}
+      <CreateAccountModal
+        isOpen={isAccountModalOpen}
+        onClose={() => setIsAccountModalOpen(false)}
+      />
+      <CreateTransactionModal
+        isOpen={isTransactionModalOpen}
+        onClose={() => setIsTransactionModalOpen(false)}
+      />
     </DashboardLayout>
   );
 }

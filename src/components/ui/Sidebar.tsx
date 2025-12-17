@@ -46,28 +46,13 @@ const mainNavItems = [
     href: "/reports",
     icon: FileBarChart,
   },
-  {
-    title: "Analytics",
-    href: "/reports",
-    icon: TrendingUp,
-  },
 ];
 
 const secondaryNavItems = [
   {
-    title: "Team",
-    href: "/settings",
-    icon: Users,
-  },
-  {
     title: "Settings",
     href: "/settings",
     icon: Settings,
-  },
-  {
-    title: "Help",
-    href: "/dashboard",
-    icon: HelpCircle,
   },
 ];
 

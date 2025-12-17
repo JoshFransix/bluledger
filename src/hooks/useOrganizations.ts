@@ -17,6 +17,14 @@ export function useOrganizations() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { name: string } }) =>
+      organizationService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+    },
+  });
+
   const currentOrgId = organizationService.getCurrentOrgId();
   const currentOrg = organizations.find((org) => org.id === currentOrgId);
 
@@ -32,8 +40,10 @@ export function useOrganizations() {
     isLoading,
     error,
     createOrganization: createMutation.mutateAsync,
+    updateOrganization: updateMutation.mutateAsync,
     setCurrentOrg,
     isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
   };
 }
 
@@ -41,6 +51,14 @@ export function useOrganization(id: string) {
   return useQuery({
     queryKey: ['organization', id],
     queryFn: () => organizationService.getById(id),
+    enabled: !!id,
+  });
+}
+
+export function useOrganizationSummary(id: string | null) {
+  return useQuery({
+    queryKey: ['organization', id, 'summary'],
+    queryFn: () => organizationService.getSummary(id!),
     enabled: !!id,
   });
 }
