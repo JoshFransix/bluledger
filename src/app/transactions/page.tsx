@@ -37,7 +37,10 @@ export default function TransactionsPage() {
   // Handle URL params for account filtering
   useEffect(() => {
     const accountIdFromUrl = searchParams.get("accountId");
-    if (accountIdFromUrl && accounts.some(acc => acc.id === accountIdFromUrl)) {
+    if (
+      accountIdFromUrl &&
+      accounts.some((acc) => acc.id === accountIdFromUrl)
+    ) {
       setSelectedAccountId(accountIdFromUrl);
     }
   }, [searchParams, accounts]);
