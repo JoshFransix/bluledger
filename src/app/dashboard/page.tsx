@@ -97,11 +97,10 @@ export default function DashboardPage() {
         change: 8.7,
         trend: "up" as const,
       },
-      cashflow: {
-        value: totalBalance,
-        change: activeAccounts,
+      activeClients: {
+        value: activeAccounts,
+        change: 5.2,
         trend: "up" as const,
-        label: `${activeAccounts} Active Accounts`,
       },
     };
   }, [transactions, accounts]);
@@ -226,7 +225,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Expenses vs Budget</CardTitle>
             <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
-              <RefreshCw className="w-4 h-4" text-muted-foreground" />
+              <RefreshCw className="w-4 h-4 text-muted-foreground" />
             </button>
           </CardHeader>
           <CardContent>
