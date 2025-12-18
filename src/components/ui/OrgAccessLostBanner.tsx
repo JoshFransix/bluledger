@@ -17,7 +17,8 @@ export function OrgAccessLostBanner() {
 
     if (typeof window !== "undefined") {
       window.addEventListener("orgAccessLost", handleAccessLoss);
-      return () => window.removeEventListener("orgAccessLost", handleAccessLoss);
+      return () =>
+        window.removeEventListener("orgAccessLost", handleAccessLoss);
     }
   }, []);
 
@@ -37,7 +38,8 @@ export function OrgAccessLostBanner() {
                 Organization access lost
               </p>
               <p className="text-sm text-amber-800">
-                You no longer have access to that organization. Switched to another one.
+                You no longer have access to that organization. Switched to
+                another one.
               </p>
             </div>
           </div>
