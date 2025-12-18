@@ -409,7 +409,7 @@ export default function SettingsPage() {
                               Accounts
                             </p>
                             <p className="text-lg font-semibold">
-                              {summary.stats?.accountsCount ?? 0}
+                              {summary?.accountsCount ?? 0}
                             </p>
                           </div>
                         </div>
@@ -425,7 +425,7 @@ export default function SettingsPage() {
                               Transactions
                             </p>
                             <p className="text-lg font-semibold">
-                              {summary.stats?.transactionsCount ?? 0}
+                              {summary?.transactionsCount ?? 0}
                             </p>
                           </div>
                         </div>
