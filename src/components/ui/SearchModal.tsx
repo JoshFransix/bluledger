@@ -78,7 +78,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <>
           {/* Backdrop */}
@@ -86,17 +86,25 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
             onClick={onClose}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
           />
 
           {/* Modal */}
           <m.div
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            initial={{ opacity: 0, scale: 0.96, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl z-50"
+            exit={{ opacity: 0, scale: 0.96, y: -20 }}
+            transition={{
+              type: "spring",
+              damping: 30,
+              stiffness: 350,
+              mass: 0.8,
+              opacity: { duration: 0.2 },
+              scale: { duration: 0.2 },
+            }}
+            className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 px-4"
           >
             <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
               {/* Search Input */}

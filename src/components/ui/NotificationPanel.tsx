@@ -104,7 +104,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <>
           {/* Backdrop */}
@@ -112,8 +112,9 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/20 z-40"
+            className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-40"
           />
 
           {/* Panel */}
@@ -121,7 +122,13 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
             initial={{ x: 400, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            transition={{
+              type: "spring",
+              damping: 30,
+              stiffness: 300,
+              mass: 0.8,
+              opacity: { duration: 0.2 },
+            }}
             className="fixed right-0 top-0 h-full w-full sm:w-96 bg-card border-l border-border shadow-2xl z-50 flex flex-col"
           >
             {/* Header */}

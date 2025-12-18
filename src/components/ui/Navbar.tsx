@@ -1,7 +1,15 @@
 "use client";
 
 import { m } from "framer-motion";
-import { Menu, Bell, Search, User, LogOut } from "lucide-react";
+import {
+  Menu,
+  Bell,
+  Search,
+  User,
+  LogOut,
+  Settings as SettingsIcon,
+  Calendar,
+} from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { SearchModal } from "./SearchModal";
 import { NotificationPanel } from "./NotificationPanel";
@@ -9,6 +17,15 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  DropdownSection,
+  Avatar,
+  User as HeroUser,
+} from "@heroui/react";
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -18,7 +35,6 @@ interface NavbarProps {
 export function Navbar({ onMenuClick, title = "Dashboard" }: NavbarProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -117,45 +133,89 @@ export function Navbar({ onMenuClick, title = "Dashboard" }: NavbarProps) {
 
           <ThemeToggle />
 
-          <div className="relative">
-            <m.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="ml-2 flex items-center gap-2 p-1.5 pr-3 rounded-lg 
-                       hover:bg-secondary transition-colors"
-            >
-              <div
-                className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent
-                            flex items-center justify-center"
+          <Dropdown
+            placement="bottom-end"
+            classNames={{
+              base: "before:bg-background",
+              content: "bg-card border border-border shadow-2xl min-w-[240px]",
+            }}
+          >
+            <DropdownTrigger>
+              <m.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="ml-2 flex items-center gap-2 p-1.5 pr-3 rounded-lg 
+                         hover:bg-secondary transition-colors outline-none"
               >
-                <User className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-medium text-sm hidden lg:block">
-                {user?.name || user?.email?.split("@")[0] || "User"}
-              </span>
-            </m.button>
-
-            {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-xl py-2 z-50">
-                <div className="px-4 py-2 border-b border-border">
-                  <p className="text-sm font-medium truncate">
-                    {user?.name || "User"}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {user?.email}
-                  </p>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary transition-colors text-left"
+                <Avatar
+                  icon={<User className="w-4 h-4" />}
+                  classNames={{
+                    base: "bg-linear-to-br from-primary to-accent",
+                    icon: "text-white",
+                  }}
+                  size="sm"
+                />
+                <span className="font-medium text-sm hidden lg:block">
+                  {user?.name || user?.email?.split("@")[0] || "User"}
+                </span>
+              </m.button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="User menu actions"
+              variant="flat"
+              classNames={{
+                base: "p-0",
+                list: "p-0",
+              }}
+            >
+              <DropdownSection showDivider classNames={{ base: "mb-0" }}>
+                <DropdownItem
+                  key="profile"
+                  isReadOnly
+                  className="h-14 gap-2 opacity-100 cursor-default hover:bg-transparent!"
+                  classNames={{
+                    base: "data-[hover=true]:bg-transparent",
+                  }}
                 >
-                  <LogOut className="w-4 h-4" />
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
+                  <HeroUser
+                    name={user?.name || "User"}
+                    description={user?.email}
+                    classNames={{
+                      name: "text-sm font-semibold",
+                      description: "text-xs text-muted-foreground",
+                    }}
+                    avatarProps={{
+                      size: "sm",
+                      icon: <User className="w-4 h-4" />,
+                      classNames: {
+                        base: "bg-linear-to-br from-primary to-accent",
+                        icon: "text-white",
+                      },
+                    }}
+                  />
+                </DropdownItem>
+              </DropdownSection>
+              <DropdownSection classNames={{ base: "mb-0" }}>
+                <DropdownItem
+                  key="settings"
+                  startContent={<SettingsIcon className="w-4 h-4" />}
+                  onClick={() => router.push("/settings")}
+                  className="text-foreground hover:bg-secondary! data-[hover=true]:bg-secondary!"
+                >
+                  Settings
+                </DropdownItem>
+                <DropdownItem
+                  key="logout"
+                  startContent={<LogOut className="w-4 h-4" />}
+                  onClick={handleLogout}
+                  className="text-danger hover:bg-danger/10! data-[hover=true]:bg-danger/10!"
+                  color="danger"
+                >
+                  Log Out
+                </DropdownItem>
+              </DropdownSection>
+            </DropdownMenu>
+          </Dropdown>
         </div>
       </m.header>
 

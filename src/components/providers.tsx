@@ -3,7 +3,7 @@
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { LazyMotion, domAnimation } from "framer-motion";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HeroUIProvider } from "@heroui/react";
+import { HeroUIProvider as HeroUINextProvider } from "@heroui/react";
 import { type ReactNode, useState } from "react";
 
 interface ProvidersProps {
@@ -25,7 +25,7 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HeroUIProvider>
+      <HeroUINextProvider>
         <NextThemesProvider
           attribute="class"
           defaultTheme="dark"
@@ -36,7 +36,7 @@ export function Providers({ children }: ProvidersProps) {
             {children}
           </LazyMotion>
         </NextThemesProvider>
-      </HeroUIProvider>
+      </HeroUINextProvider>
     </QueryClientProvider>
   );
 }

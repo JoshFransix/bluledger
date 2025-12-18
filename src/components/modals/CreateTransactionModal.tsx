@@ -5,7 +5,8 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
 import { X } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
-import { Input, Select, SelectItem, Textarea, Button } from "@heroui/react";
+import { Input, Select, SelectItem, Textarea, Button, DatePicker } from "@heroui/react";
+import { parseDate } from "@internationalized/date";
 import type { TransactionType } from "@/types/api";
 
 interface CreateTransactionModalProps {
@@ -42,6 +43,7 @@ export function CreateTransactionModal({
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [dateValue, setDateValue] = useState(parseDate(new Date().toISOString().split("T")[0]));
 
   const activeAccounts = accounts.filter((acc) => acc.isActive);
 
@@ -303,12 +305,19 @@ export function CreateTransactionModal({
                   description="Optional"
                 />
 
-                <Input
-                  type="date"
-                  label="Date"
+                <DatePicker
+                  label="Transaction Date"
                   variant="bordered"
-                  value={date}
-                  onValueChange={setDate}
+                  value={dateValue}
+                  onChange={(value) => {
+                    setDateValue(value);
+                    setDate(`${value.year}-${String(value.month).padStart(2, '0')}-${String(value.day).padStart(2, '0')}`);
+                  }}
+                  showMonthAndYearPickers
+                  classNames={{
+                    base: "w-full",
+                    input: "text-sm",
+                  }}
                 />
 
                 <div className="flex gap-3 pt-4">

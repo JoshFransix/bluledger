@@ -54,22 +54,28 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         </div>
 
         {/* Mobile Sidebar Overlay */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {mobileMenuOpen && (
             <>
               <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
                 onClick={() => setMobileMenuOpen(false)}
               />
               <m.div
-                initial={{ x: "-100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                initial={{ x: "-100%", opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: "-100%", opacity: 0 }}
+                transition={{
+                  type: "spring",
+                  damping: 30,
+                  stiffness: 300,
+                  mass: 0.8,
+                  opacity: { duration: 0.2 },
+                }}
                 className="fixed left-0 top-0 z-50 lg:hidden"
               >
                 <Sidebar

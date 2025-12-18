@@ -17,11 +17,18 @@ import {
   LogOut,
   Building2,
   ChevronDown,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useOrganizations } from "@/hooks/useOrganizations";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@heroui/react";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -66,7 +73,6 @@ export function Sidebar({
   const router = useRouter();
   const { organizations, currentOrg, setCurrentOrg } = useOrganizations();
   const { logout } = useAuth();
-  const [showOrgDropdown, setShowOrgDropdown] = useState(false);
 
   const sidebarVariants = {
     expanded: { width: isMobile ? "280px" : "256px" },
@@ -89,7 +95,11 @@ export function Sidebar({
       initial={false}
       animate={isCollapsed && !isMobile ? "collapsed" : "expanded"}
       variants={sidebarVariants}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
+      transition={{
+        duration: 0.3,
+        ease: [0.4, 0.0, 0.2, 1],
+        type: "tween",
+      }}
       className={cn(
         "h-screen bg-sidebar border-r border-sidebar-border flex flex-col",
         "transition-colors duration-300",
@@ -106,7 +116,7 @@ export function Sidebar({
           onClick={handleNavClick}
         >
           <div
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent 
+            className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-accent 
                           flex items-center justify-center shadow-lg glow-blue-subtle"
           >
             <Wallet className="w-5 h-5 text-white" />
@@ -118,7 +128,7 @@ export function Sidebar({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.2 }}
-                className="font-bold text-xl bg-gradient-to-r from-primary to-accent 
+                className="font-bold text-xl bg-linear-to-r from-primary to-accent 
                            bg-clip-text text-transparent"
               >
                 BluLedger
@@ -129,43 +139,75 @@ export function Sidebar({
       </div>
 
       {/* Organization Switcher */}
-      {(!isCollapsed || isMobile) && currentOrg && (
+      {(!isCollapsed || isMobile) && currentOrg && organizations.length > 0 && (
         <div className="px-3 py-3 border-b border-sidebar-border">
-          <div className="relative">
-            <button
-              onClick={() => setShowOrgDropdown(!showOrgDropdown)}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors text-left"
-            >
-              <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          {organizations.length === 1 ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50">
+              <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">
                   {currentOrg.name}
                 </p>
                 <p className="text-xs text-muted-foreground">Organization</p>
               </div>
-              <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            </button>
-
-            {showOrgDropdown && organizations.length > 1 && (
-              <div className="absolute top-full left-0 right-0 mt-1 mx-3 bg-card border border-border rounded-lg shadow-xl py-1 z-50">
+            </div>
+          ) : (
+            <Dropdown
+              placement="bottom-start"
+              classNames={{
+                base: "w-full",
+                content: "bg-card border border-border shadow-xl min-w-[200px]",
+              }}
+            >
+              <DropdownTrigger>
+                <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors text-left outline-none">
+                  <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {currentOrg.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Organization
+                    </p>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                </button>
+              </DropdownTrigger>
+              <DropdownMenu
+                aria-label="Organization selection"
+                variant="flat"
+                selectionMode="single"
+                selectedKeys={[currentOrg.id.toString()]}
+                onSelectionChange={(keys) => {
+                  const selectedId = Array.from(keys)[0] as string;
+                  if (selectedId) {
+                    setCurrentOrg(parseInt(selectedId));
+                  }
+                }}
+                classNames={{
+                  base: "p-0",
+                  list: "p-1",
+                }}
+              >
                 {organizations.map((org) => (
-                  <button
-                    key={org.id}
-                    onClick={() => {
-                      setCurrentOrg(org.id);
-                      setShowOrgDropdown(false);
-                    }}
-                    className={cn(
-                      "w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors",
-                      org.id === currentOrg.id && "bg-secondary"
-                    )}
+                  <DropdownItem
+                    key={org.id.toString()}
+                    textValue={org.name}
+                    className="text-foreground hover:bg-secondary! data-[hover=true]:bg-secondary!"
+                    endContent={
+                      org.id === currentOrg.id ? (
+                        <Check className="w-4 h-4 text-primary" />
+                      ) : null
+                    }
                   >
-                    {org.name}
-                  </button>
+                    <div>
+                      <p className="text-sm font-medium">{org.name}</p>
+                    </div>
+                  </DropdownItem>
                 ))}
-              </div>
-            )}
-          </div>
+              </DropdownMenu>
+            </Dropdown>
+          )}
         </div>
       )}
 
@@ -296,9 +338,7 @@ function NavItem({ item, isActive, isCollapsed, onClick }: NavItemProps) {
           isCollapsed && "justify-center"
         )}
       >
-        <Icon
-          className={cn("w-5 h-5 flex-shrink-0", isActive && "text-primary")}
-        />
+        <Icon className={cn("w-5 h-5 shrink-0", isActive && "text-primary")} />
         <AnimatePresence mode="wait">
           {!isCollapsed && (
             <m.span

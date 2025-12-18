@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@plugin '../lib/hero.ts';
+
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}'
+
+@custom-variant dark (&:is(.dark *));
 
 /* BluLedger Brand Colors as CSS Variables */
 :root {
@@ -136,7 +141,10 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-* {
+input,
+textarea,
+select,
+button {
   border-color: rgb(var(--border));
 }
 
