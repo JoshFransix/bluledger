@@ -86,7 +86,8 @@ export default function TransactionsPage() {
     }
 
     return filtered.sort(
-      (a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a: any, b: any) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   }, [transactions, selectedAccountId, filterType, searchQuery]);
 
@@ -208,7 +209,8 @@ export default function TransactionsPage() {
                         <p className="text-xs text-muted-foreground">
                           {formatCurrency(
                             accounts.reduce(
-                              (sum: number, acc: any) => sum + parseFloat(acc.balance),
+                              (sum: number, acc: any) =>
+                                sum + parseFloat(acc.balance),
                               0
                             )
                           )}
@@ -356,71 +358,78 @@ export default function TransactionsPage() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {filteredTransactions.map((transaction: any, index: number) => (
-                      <m.div
-                        key={transaction.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        onClick={() => setSelectedTransaction(transaction)}
-                        className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
-                      >
-                        <div
-                          className={cn(
-                            "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
-                            transaction.type === "INCOME" &&
-                              "bg-emerald-500/10",
-                            transaction.type === "EXPENSE" && "bg-rose-500/10",
-                            transaction.type === "TRANSFER" && "bg-blue-500/10"
-                          )}
+                    {filteredTransactions.map(
+                      (transaction: any, index: number) => (
+                        <m.div
+                          key={transaction.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          onClick={() => setSelectedTransaction(transaction)}
+                          className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
                         >
-                          {transaction.type === "INCOME" && (
-                            <ArrowDownLeft className="w-5 h-5 text-emerald-500" />
-                          )}
-                          {transaction.type === "EXPENSE" && (
-                            <ArrowUpRight className="w-5 h-5 text-rose-500" />
-                          )}
-                          {transaction.type === "TRANSFER" && (
-                            <ArrowLeftRight className="w-5 h-5 text-blue-500" />
-                          )}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">
-                            {transaction.description || "Untitled Transaction"}
-                          </p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            {transaction.category && (
-                              <span className="text-xs px-2 py-0.5 rounded bg-secondary text-muted-foreground">
-                                {transaction.category}
-                              </span>
-                            )}
-                            <span className="text-xs text-muted-foreground">
-                              {formatDate(transaction.date)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="text-right">
-                          <p
+                          <div
                             className={cn(
-                              "font-semibold",
+                              "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
                               transaction.type === "INCOME" &&
-                                "text-emerald-500",
-                              transaction.type === "EXPENSE" && "text-rose-500",
-                              transaction.type === "TRANSFER" && "text-blue-500"
+                                "bg-emerald-500/10",
+                              transaction.type === "EXPENSE" &&
+                                "bg-rose-500/10",
+                              transaction.type === "TRANSFER" &&
+                                "bg-blue-500/10"
                             )}
                           >
-                            {transaction.type === "INCOME" && "+"}
-                            {transaction.type === "EXPENSE" && "-"}
-                            {formatCurrency(parseFloat(transaction.amount))}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {transaction.currency}
-                          </p>
-                        </div>
-                      </m.div>
-                    ))}
+                            {transaction.type === "INCOME" && (
+                              <ArrowDownLeft className="w-5 h-5 text-emerald-500" />
+                            )}
+                            {transaction.type === "EXPENSE" && (
+                              <ArrowUpRight className="w-5 h-5 text-rose-500" />
+                            )}
+                            {transaction.type === "TRANSFER" && (
+                              <ArrowLeftRight className="w-5 h-5 text-blue-500" />
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">
+                              {transaction.description ||
+                                "Untitled Transaction"}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {transaction.category && (
+                                <span className="text-xs px-2 py-0.5 rounded bg-secondary text-muted-foreground">
+                                  {transaction.category}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground">
+                                {formatDate(transaction.date)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <p
+                              className={cn(
+                                "font-semibold",
+                                transaction.type === "INCOME" &&
+                                  "text-emerald-500",
+                                transaction.type === "EXPENSE" &&
+                                  "text-rose-500",
+                                transaction.type === "TRANSFER" &&
+                                  "text-blue-500"
+                              )}
+                            >
+                              {transaction.type === "INCOME" && "+"}
+                              {transaction.type === "EXPENSE" && "-"}
+                              {formatCurrency(parseFloat(transaction.amount))}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {transaction.currency}
+                            </p>
+                          </div>
+                        </m.div>
+                      )
+                    )}
                   </div>
                 )}
               </CardContent>

@@ -260,7 +260,7 @@ export function CreateTransactionModal({
                     selectionMode="single"
                     disallowEmptySelection
                   >
-                    {activeAccounts.map((account) => (
+                    {activeAccounts.map((account: any) => (
                       <SelectItem key={account.id} textValue={account.name}>
                         {account.name} ({account.currency} {account.balance})
                       </SelectItem>
@@ -341,7 +341,7 @@ export function CreateTransactionModal({
                 <DatePicker
                   label="Transaction Date"
                   variant="bordered"
-                  value={dateValue}
+                  value={dateValue as any}
                   onChange={(value: any) => {
                     setDateValue(value);
                     if (value) {
