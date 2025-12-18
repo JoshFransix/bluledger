@@ -18,8 +18,10 @@ import {
 } from "@/components/charts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Download, Calendar, ChevronDown, FileBarChart } from "lucide-react";
+import { DateRangePicker, Button } from "@heroui/react";
+import { parseDate, getLocalTimeZone, today } from "@internationalized/date";
 
 function ChartSkeleton() {
   return (
@@ -30,6 +32,31 @@ function ChartSkeleton() {
 export default function ReportsPage() {
   const { transactions, isLoading: transactionsLoading } = useTransactions();
   const { accounts, isLoading: accountsLoading } = useAccounts();
+  const [dateRange, setDateRange] = useState<{
+    start: any;
+    end: any;
+  } | null>(null);
+
+  // Filter transactions by date range
+  const filteredTransactions = useMemo(() => {
+    if (!dateRange?.start || !dateRange?.end) return transactions;
+
+    const startDate = new Date(
+      dateRange.start.year,
+      dateRange.start.month - 1,
+      dateRange.start.day
+    );
+    const endDate = new Date(
+      dateRange.end.year,
+      dateRange.end.month - 1,
+      dateRange.end.day
+    );
+
+    return transactions.filter((t) => {
+      const txDate = new Date(t.date);
+      return txDate >= startDate && txDate <= endDate;
+    });
+  }, [transactions, dateRange]);
 
   // Calculate summary statistics from real data
   const summaryStats = useMemo(() => {
@@ -40,12 +67,12 @@ export default function ReportsPage() {
       now.getDate()
     );
 
-    const currentYearTransactions = transactions.filter(
+    const currentYearTransactions = filteredTransactions.filter(
       (t) => new Date(t.date) >= lastYear
     );
     const previousYearStart = new Date(lastYear);
     previousYearStart.setFullYear(previousYearStart.getFullYear() - 1);
-    const previousYearTransactions = transactions.filter(
+    const previousYearTransactions = filteredTransactions.filter(
       (t) =>
         new Date(t.date) >= previousYearStart && new Date(t.date) < lastYear
     );
@@ -100,12 +127,12 @@ export default function ReportsPage() {
         change: profitMargin - previousProfitMargin,
       },
     };
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // Prepare revenue chart data
   const revenueData = useMemo(() => {
     const monthlyData: Record<string, number> = {};
-    transactions
+    filteredTransactions
       .filter((t) => t.type === "INCOME")
       .forEach((t) => {
         const date = new Date(t.date);
@@ -121,13 +148,13 @@ export default function ReportsPage() {
         target: value * 1.1, // 10% above actual as target
       }))
       .slice(-12);
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // Prepare expenses chart data
   const expensesData = useMemo(() => {
     const monthlyData: Record<string, { expenses: number; budget: number }> =
       {};
-    transactions
+    filteredTransactions
       .filter((t) => t.type === "EXPENSE")
       .forEach((t) => {
         const date = new Date(t.date);
@@ -142,12 +169,12 @@ export default function ReportsPage() {
     return Object.entries(monthlyData)
       .map(([month, data]) => ({ month, ...data }))
       .slice(-12);
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // Prepare expenses by category
   const expensesByCategory = useMemo(() => {
     const categoryData: Record<string, number> = {};
-    transactions
+    filteredTransactions
       .filter((t) => t.type === "EXPENSE")
       .forEach((t) => {
         const category = t.category || "Uncategorized";
@@ -168,7 +195,7 @@ export default function ReportsPage() {
       }))
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 6); // Top 6 categories
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // Prepare cashflow chart data
   const cashflowData = useMemo(() => {
@@ -176,7 +203,7 @@ export default function ReportsPage() {
       string,
       { month: string; inflow: number; outflow: number; net: number }
     > = {};
-    transactions.forEach((t) => {
+    filteredTransactions.forEach((t) => {
       const date = new Date(t.date);
       const monthKey = date.toLocaleString("default", { month: "short" });
 
@@ -199,10 +226,10 @@ export default function ReportsPage() {
     return Object.values(monthlyData)
       .map((d) => ({ ...d, net: d.inflow - d.outflow }))
       .slice(-12);
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   const isLoading = transactionsLoading || accountsLoading;
-  const hasData = transactions.length > 0;
+  const hasData = filteredTransactions.length > 0;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -222,29 +249,36 @@ export default function ReportsPage() {
           title="Financial Reports"
           description="Detailed analytics and insights from your real transaction data"
         >
-          <div className="flex items-center gap-2">
-            <button
-              disabled
-              className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                     bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Date range filter coming soon"
+          <div className="flex flex-wrap items-center gap-2">
+            <DateRangePicker
+              label="Date Range"
+              variant="bordered"
+              value={dateRange}
+              onChange={setDateRange}
+              showMonthAndYearPickers
+              visibleMonths={2}
+              classNames={{
+                base: "max-w-xs",
+                input: "text-sm",
+              }}
+            />
+            {dateRange && (
+              <Button
+                size="sm"
+                variant="flat"
+                onPress={() => setDateRange(null)}
+              >
+                Clear Filter
+              </Button>
+            )}
+            <Button
+              startContent={<Download className="w-4 h-4" />}
+              color="primary"
+              size="sm"
+              isDisabled
             >
-              <Calendar className="w-4 h-4" />
-              <span className="hidden sm:inline">Last 12 months</span>
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            <button
-              disabled
-              className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                     bg-primary text-primary-foreground hover:bg-primary/90 
-                     transition-colors text-sm font-medium
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-              title="PDF export coming soon"
-            >
-              <Download className="w-4 h-4" />
               <span className="hidden sm:inline">Export PDF</span>
-            </button>
+            </Button>
           </div>
         </PageHeader>
 

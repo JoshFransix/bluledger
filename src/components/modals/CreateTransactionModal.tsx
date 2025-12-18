@@ -5,7 +5,14 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
 import { X } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
-import { Input, Select, SelectItem, Textarea, Button, DatePicker } from "@heroui/react";
+import {
+  Input,
+  Select,
+  SelectItem,
+  Textarea,
+  Button,
+  DatePicker,
+} from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 import type { TransactionType } from "@/types/api";
 
@@ -43,7 +50,9 @@ export function CreateTransactionModal({
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [dateValue, setDateValue] = useState(parseDate(new Date().toISOString().split("T")[0]));
+  const [dateValue, setDateValue] = useState(
+    parseDate(new Date().toISOString().split("T")[0])
+  );
 
   const activeAccounts = accounts.filter((acc) => acc.isActive);
 
@@ -173,7 +182,7 @@ export function CreateTransactionModal({
                   <m.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
-                    className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm break-words"
+                    className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm wrap-break-word"
                   >
                     {error}
                   </m.div>
@@ -311,7 +320,12 @@ export function CreateTransactionModal({
                   value={dateValue}
                   onChange={(value) => {
                     setDateValue(value);
-                    setDate(`${value.year}-${String(value.month).padStart(2, '0')}-${String(value.day).padStart(2, '0')}`);
+                    setDate(
+                      `${value.year}-${String(value.month).padStart(
+                        2,
+                        "0"
+                      )}-${String(value.day).padStart(2, "0")}`
+                    );
                   }}
                   showMonthAndYearPickers
                   classNames={{

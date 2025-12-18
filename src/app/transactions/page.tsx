@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { m } from "framer-motion";
+import { Input, Button, Chip } from "@heroui/react";
 
 export default function TransactionsPage() {
   const searchParams = useSearchParams();
@@ -127,15 +128,13 @@ export default function TransactionsPage() {
           title="Transactions"
           description="Track and manage all your financial transactions"
         >
-          <button
-            onClick={() => setIsTransactionModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                     bg-primary text-primary-foreground hover:bg-primary/90 
-                     transition-colors text-sm font-medium"
+          <Button
+            startContent={<Plus className="w-4 h-4" />}
+            color="primary"
+            onPress={() => setIsTransactionModalOpen(true)}
           >
-            <Plus className="w-4 h-4" />
             New Transaction
-          </button>
+          </Button>
         </PageHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -257,33 +256,34 @@ export default function TransactionsPage() {
 
                 {/* Search and Filters */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="Search transactions..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full h-10 pl-10 pr-4 rounded-lg bg-secondary/50 border border-border
-                             text-sm placeholder:text-muted-foreground
-                             focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                    />
-                  </div>
-                  <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Search transactions..."
+                    value={searchQuery}
+                    onValueChange={setSearchQuery}
+                    startContent={
+                      <Search className="w-4 h-4 text-default-400" />
+                    }
+                    variant="bordered"
+                    classNames={{
+                      base: "flex-1",
+                      input: "text-sm",
+                    }}
+                  />
+                  <div className="flex gap-2 flex-wrap">
                     {(["ALL", "INCOME", "EXPENSE", "TRANSFER"] as const).map(
                       (type) => (
-                        <button
+                        <Chip
                           key={type}
                           onClick={() => setFilterType(type)}
-                          className={cn(
-                            "px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                            filterType === type
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary hover:bg-secondary/80"
-                          )}
+                          variant={filterType === type ? "solid" : "bordered"}
+                          color={filterType === type ? "primary" : "default"}
+                          className="cursor-pointer"
                         >
-                          {type}
-                        </button>
+                          {type === "ALL"
+                            ? "All"
+                            : type.charAt(0) + type.slice(1).toLowerCase()}
+                        </Chip>
                       )
                     )}
                   </div>

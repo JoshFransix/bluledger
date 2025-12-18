@@ -17,6 +17,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { User, Building, Save, Users, TrendingUp, Wallet } from "lucide-react";
+import { Input, Button } from "@heroui/react";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -86,38 +87,23 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSaveOrganization} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Organization Name
-                    </label>
-                    <input
-                      type="text"
-                      value={orgName}
-                      onChange={(e) => setOrgName(e.target.value)}
-                      placeholder={
-                        currentOrg?.name || "Enter organization name"
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-secondary border border-border
-                             focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
-                             transition-all"
-                    />
-                  </div>
+                  <Input
+                    type="text"
+                    label="Organization Name"
+                    variant="bordered"
+                    value={orgName}
+                    onValueChange={setOrgName}
+                    placeholder={currentOrg?.name || "Enter organization name"}
+                  />
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Organization ID
-                    </label>
-                    <input
-                      type="text"
-                      value={currentOrgId || ""}
-                      disabled
-                      className="w-full px-4 py-2.5 rounded-lg bg-secondary/50 border border-border
-                             text-muted-foreground cursor-not-allowed"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      This is your unique organization identifier
-                    </p>
-                  </div>
+                  <Input
+                    type="text"
+                    label="Organization ID"
+                    variant="bordered"
+                    value={currentOrgId?.toString() || ""}
+                    isDisabled
+                    description="This is your unique organization identifier"
+                  />
 
                   {saveMessage && (
                     <div
@@ -131,20 +117,15 @@ export default function SettingsPage() {
                     </div>
                   )}
 
-                  <button
+                  <Button
                     type="submit"
-                    disabled={
-                      isSaving ||
-                      isUpdating ||
-                      orgName.trim() === currentOrg?.name
-                    }
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground
-                           hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
-                           font-medium"
+                    color="primary"
+                    startContent={<Save className="w-4 h-4" />}
+                    isLoading={isSaving || isUpdating}
+                    isDisabled={orgName.trim() === currentOrg?.name}
                   >
-                    <Save className="w-4 h-4" />
                     {isSaving ? "Saving..." : "Save Changes"}
-                  </button>
+                  </Button>
                 </form>
               </CardContent>
             </Card>
