@@ -1,13 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transactionService } from '@/services/transaction.service';
+import { organizationService } from '@/services/organization.service';
 import type { CreateTransactionDto, UpdateTransactionDto } from '@/types/api';
 
 export function useTransactions() {
   const queryClient = useQueryClient();
+  const currentOrgId = organizationService.getCurrentOrgId();
 
   const { data: transactions = [], isLoading, error } = useQuery({
-    queryKey: ['transactions'],
+    queryKey: ['transactions', currentOrgId],
     queryFn: () => transactionService.getAll(),
+    enabled: !!currentOrgId, // Only run if we have an org selected
   });
 
   const createMutation = useMutation({

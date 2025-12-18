@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { organizationService } from '@/services/organization.service';
 import type { CreateOrganizationDto } from '@/types/api';
+import { useEffect } from 'react';
 
 export function useOrganizations() {
   const queryClient = useQueryClient();
@@ -27,6 +28,13 @@ export function useOrganizations() {
 
   const currentOrgId = organizationService.getCurrentOrgId();
   const currentOrg = organizations.find((org) => org.id === currentOrgId);
+
+  // Auto-select first organization if none is selected
+  useEffect(() => {
+    if (!isLoading && organizations.length > 0 && !currentOrgId) {
+      organizationService.setCurrentOrg(organizations[0].id);
+    }
+  }, [organizations, currentOrgId, isLoading]);
 
   const setCurrentOrg = (orgId: string) => {
     organizationService.setCurrentOrg(orgId);

@@ -11,9 +11,16 @@ import {
   DynamicExpensesChart,
   DynamicCashflowChart,
 } from "@/components/charts";
-import { Download, Filter, RefreshCw, LayoutDashboard } from "lucide-react";
+import {
+  Download,
+  Filter,
+  RefreshCw,
+  LayoutDashboard,
+  Plus,
+} from "lucide-react";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
+import { useOrganizations } from "@/hooks/useOrganizations";
 import { CreateAccountModal } from "@/components/modals/CreateAccountModal";
 import { CreateTransactionModal } from "@/components/modals/CreateTransactionModal";
 import { useMemo, useState } from "react";
@@ -52,12 +59,24 @@ function KPISkeleton() {
 }
 
 export default function DashboardPage() {
-  const { transactions, isLoading: transactionsLoading, refetch: refetchTransactions } = useTransactions();
-  const { accounts, isLoading: accountsLoading, refetch: refetchAccounts } = useAccounts();
+  const {
+    transactions,
+    isLoading: transactionsLoading,
+    refetch: refetchTransactions,
+  } = useTransactions();
+  const {
+    accounts,
+    isLoading: accountsLoading,
+    refetch: refetchAccounts,
+  } = useAccounts();
+  const { currentOrg } = useOrganizations();
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Check if user can edit (admin or member, not viewer)
+  const canEdit = currentOrg?.role !== "viewer";
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -138,9 +157,14 @@ export default function DashboardPage() {
     // Calculate net profit change properly
     const currentNetProfit = currentRevenue - currentExpenses;
     const previousNetProfit = previousRevenue - previousExpenses;
-    const netProfitChange = previousNetProfit !== 0 
-      ? ((currentNetProfit - previousNetProfit) / Math.abs(previousNetProfit)) * 100
-      : currentNetProfit > 0 ? 100 : 0;
+    const netProfitChange =
+      previousNetProfit !== 0
+        ? ((currentNetProfit - previousNetProfit) /
+            Math.abs(previousNetProfit)) *
+          100
+        : currentNetProfit > 0
+        ? 100
+        : 0;
 
     return {
       totalRevenue: {
@@ -148,7 +172,9 @@ export default function DashboardPage() {
         change:
           previousRevenue > 0
             ? ((currentRevenue - previousRevenue) / previousRevenue) * 100
-            : currentRevenue > 0 ? 100 : 0,
+            : currentRevenue > 0
+            ? 100
+            : 0,
         trend:
           currentRevenue >= previousRevenue
             ? ("up" as const)
@@ -159,7 +185,9 @@ export default function DashboardPage() {
         change:
           previousExpenses > 0
             ? ((currentExpenses - previousExpenses) / previousExpenses) * 100
-            : currentExpenses > 0 ? 100 : 0,
+            : currentExpenses > 0
+            ? 100
+            : 0,
         trend:
           currentExpenses <= previousExpenses
             ? ("down" as const)
@@ -168,7 +196,10 @@ export default function DashboardPage() {
       netProfit: {
         value: currentNetProfit,
         change: isFinite(netProfitChange) ? netProfitChange : 0,
-        trend: currentNetProfit >= previousNetProfit ? ("up" as const) : ("down" as const),
+        trend:
+          currentNetProfit >= previousNetProfit
+            ? ("up" as const)
+            : ("down" as const),
       },
       activeClients: {
         value: activeAccounts,
@@ -316,20 +347,22 @@ export default function DashboardPage() {
                 Get started by creating your first account and recording your
                 first transaction.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <button
-                  onClick={() => setIsAccountModalOpen(true)}
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-                >
-                  Create Account
-                </button>
-                <button
-                  onClick={() => setIsTransactionModalOpen(true)}
-                  className="px-6 py-3 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium"
-                >
-                  Add Transaction
-                </button>
-              </div>
+              {canEdit && (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => setIsAccountModalOpen(true)}
+                    className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  >
+                    Create Account
+                  </button>
+                  <button
+                    onClick={() => setIsTransactionModalOpen(true)}
+                    className="px-6 py-3 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium"
+                  >
+                    Add Transaction
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -344,15 +377,17 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Revenue Overview</CardTitle>
-                  <button 
+                  <button
                     onClick={handleRefresh}
                     disabled={isRefreshing}
                     className="p-2 rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
                   >
-                    <RefreshCw className={cn(
-                      "w-4 h-4 text-muted-foreground transition-transform duration-500",
-                      isRefreshing && "animate-spin"
-                    )} />
+                    <RefreshCw
+                      className={cn(
+                        "w-4 h-4 text-muted-foreground transition-transform duration-500",
+                        isRefreshing && "animate-spin"
+                      )}
+                    />
                   </button>
                 </CardHeader>
                 <CardContent>
@@ -367,15 +402,17 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Expenses vs Budget</CardTitle>
-                  <button 
+                  <button
                     onClick={handleRefresh}
                     disabled={isRefreshing}
                     className="p-2 rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
                   >
-                    <RefreshCw className={cn(
-                      "w-4 h-4 text-muted-foreground transition-transform duration-500",
-                      isRefreshing && "animate-spin"
-                    )} />
+                    <RefreshCw
+                      className={cn(
+                        "w-4 h-4 text-muted-foreground transition-transform duration-500",
+                        isRefreshing && "animate-spin"
+                      )}
+                    />
                   </button>
                 </CardHeader>
                 <CardContent>
@@ -393,16 +430,6 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Cashflow Timeline</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <select
-                      className="px-3 py-1.5 rounded-lg bg-secondary border-0 text-sm 
-                                 focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="12m">Last 12 months</option>
-                      <option value="6m">Last 6 months</option>
-                      <option value="3m">Last 3 months</option>
-                    </select>
-                  </div>
                 </CardHeader>
                 <CardContent>
                   {isLoading ? (

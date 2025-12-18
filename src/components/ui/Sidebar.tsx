@@ -18,6 +18,7 @@ import {
   Building2,
   ChevronDown,
   Check,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useOrganizations } from "@/hooks/useOrganizations";
@@ -29,6 +30,7 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@heroui/react";
+import { CreateOrganizationModal } from "@/components/modals/CreateOrganizationModal";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -73,6 +75,7 @@ export function Sidebar({
   const router = useRouter();
   const { organizations, currentOrg, setCurrentOrg } = useOrganizations();
   const { logout } = useAuth();
+  const [isOrgModalOpen, setIsOrgModalOpen] = useState(false);
 
   const sidebarVariants = {
     expanded: { width: isMobile ? "280px" : "256px" },
@@ -139,9 +142,17 @@ export function Sidebar({
       </div>
 
       {/* Organization Switcher */}
-      {(!isCollapsed || isMobile) && currentOrg && organizations.length > 0 && (
+      {(!isCollapsed || isMobile) && organizations.length > 0 && (
         <div className="px-3 py-3 border-b border-sidebar-border">
-          {organizations.length === 1 ? (
+          {!currentOrg ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 animate-pulse">
+              <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="h-4 bg-secondary rounded w-20 mb-1"></div>
+                <div className="h-3 bg-secondary/50 rounded w-16"></div>
+              </div>
+            </div>
+          ) : organizations.length === 1 ? (
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50">
               <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
@@ -177,11 +188,11 @@ export function Sidebar({
                 aria-label="Organization selection"
                 variant="flat"
                 selectionMode="single"
-                selectedKeys={[currentOrg.id.toString()]}
+                selectedKeys={currentOrg?.id ? [currentOrg.id] : []}
                 onSelectionChange={(keys) => {
                   const selectedId = Array.from(keys)[0] as string;
                   if (selectedId) {
-                    setCurrentOrg(parseInt(selectedId));
+                    setCurrentOrg(selectedId);
                   }
                 }}
                 classNames={{
@@ -191,11 +202,11 @@ export function Sidebar({
               >
                 {organizations.map((org) => (
                   <DropdownItem
-                    key={org.id.toString()}
+                    key={org.id}
                     textValue={org.name}
                     className="text-foreground hover:bg-secondary! data-[hover=true]:bg-secondary!"
                     endContent={
-                      org.id === currentOrg.id ? (
+                      org.id === currentOrg?.id ? (
                         <Check className="w-4 h-4 text-primary" />
                       ) : null
                     }
@@ -208,6 +219,16 @@ export function Sidebar({
               </DropdownMenu>
             </Dropdown>
           )}
+
+          {/* Create Organization Button */}
+          <button
+            onClick={() => setIsOrgModalOpen(true)}
+            className="w-full flex items-center gap-2 px-3 py-2 mt-2 rounded-lg 
+                     bg-primary/10 hover:bg-primary/20 transition-colors text-primary text-left"
+          >
+            <Plus className="w-4 h-4 shrink-0" />
+            <span className="text-sm font-medium">New Organization</span>
+          </button>
         </div>
       )}
 
@@ -310,6 +331,12 @@ export function Sidebar({
           )}
         </button>
       )}
+
+      {/* Organization Modal */}
+      <CreateOrganizationModal
+        isOpen={isOrgModalOpen}
+        onClose={() => setIsOrgModalOpen(false)}
+      />
     </m.aside>
   );
 }

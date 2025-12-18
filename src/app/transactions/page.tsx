@@ -6,7 +6,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
+import { useOrganizations } from "@/hooks/useOrganizations";
 import { CreateTransactionModal } from "@/components/modals/CreateTransactionModal";
+import { CreateAccountModal } from "@/components/modals/CreateAccountModal";
+import { ViewEditTransactionModal } from "@/components/modals/ViewEditTransactionModal";
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -20,12 +23,13 @@ import {
 } from "lucide-react";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { m } from "framer-motion";
-import { Input, Button, Chip } from "@heroui/react";
+import { Input, Button } from "@heroui/react";
 
 export default function TransactionsPage() {
   const searchParams = useSearchParams();
   const { transactions, isLoading: transactionsLoading } = useTransactions();
   const { accounts, isLoading: accountsLoading } = useAccounts();
+  const { currentOrg } = useOrganizations();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null
   );
@@ -34,6 +38,11 @@ export default function TransactionsPage() {
     "ALL" | "INCOME" | "EXPENSE" | "TRANSFER"
   >("ALL");
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+
+  // Check if user can edit (admin or member, not viewer)
+  const canEdit = currentOrg?.role !== "viewer";
 
   // Handle URL params for account filtering
   useEffect(() => {
@@ -128,13 +137,26 @@ export default function TransactionsPage() {
           title="Transactions"
           description="Track and manage all your financial transactions"
         >
-          <Button
-            startContent={<Plus className="w-4 h-4" />}
-            color="primary"
-            onPress={() => setIsTransactionModalOpen(true)}
-          >
-            New Transaction
-          </Button>
+          {canEdit && (
+            <>
+              <Button
+                startContent={<Plus className="w-4 h-4" />}
+                color="default"
+                variant="bordered"
+                onPress={() => setIsAccountModalOpen(true)}
+                className="mr-2"
+              >
+                Add Account
+              </Button>
+              <Button
+                startContent={<Plus className="w-4 h-4" />}
+                color="primary"
+                onPress={() => setIsTransactionModalOpen(true)}
+              >
+                New Transaction
+              </Button>
+            </>
+          )}
         </PageHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -157,56 +179,64 @@ export default function TransactionsPage() {
                     <p className="text-sm text-muted-foreground mb-3">
                       No accounts yet
                     </p>
-                    <button
-                      onClick={() => {
+                    <Button
+                      size="sm"
+                      color="primary"
+                      variant="light"
+                      onPress={() => {
                         // Redirect to dashboard where account creation is
                         window.location.href = "/dashboard";
                       }}
-                      className="text-sm text-primary hover:underline"
                     >
                       Create Account
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <>
-                    <button
-                      onClick={() => setSelectedAccountId(null)}
+                    <Button
+                      onPress={() => setSelectedAccountId(null)}
                       className={cn(
-                        "w-full text-left px-3 py-2 rounded-lg transition-colors",
+                        "w-full justify-start px-3 py-2 h-auto min-h-0",
                         !selectedAccountId
                           ? "bg-primary/10 border border-primary/20"
-                          : "hover:bg-secondary/50"
+                          : "bg-transparent hover:bg-secondary/50"
                       )}
+                      variant="flat"
                     >
-                      <p className="text-sm font-medium">All Accounts</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatCurrency(
-                          accounts.reduce(
-                            (sum, acc) => sum + parseFloat(acc.balance),
-                            0
-                          )
-                        )}
-                      </p>
-                    </button>
+                      <div className="flex flex-col items-start w-full">
+                        <p className="text-sm font-medium">All Accounts</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatCurrency(
+                            accounts.reduce(
+                              (sum, acc) => sum + parseFloat(acc.balance),
+                              0
+                            )
+                          )}
+                        </p>
+                      </div>
+                    </Button>
                     {accounts.map((account) => (
-                      <button
+                      <Button
                         key={account.id}
-                        onClick={() => setSelectedAccountId(account.id)}
+                        onPress={() => setSelectedAccountId(account.id)}
                         className={cn(
-                          "w-full text-left px-3 py-2 rounded-lg transition-colors",
+                          "w-full justify-start px-3 py-2 h-auto min-h-0",
                           selectedAccountId === account.id
                             ? "bg-primary/10 border border-primary/20"
-                            : "hover:bg-secondary/50"
+                            : "bg-transparent hover:bg-secondary/50"
                         )}
+                        variant="flat"
                       >
-                        <p className="text-sm font-medium truncate">
-                          {account.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatCurrency(parseFloat(account.balance))}{" "}
-                          {account.currency}
-                        </p>
-                      </button>
+                        <div className="flex flex-col items-start w-full">
+                          <p className="text-sm font-medium truncate">
+                            {account.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatCurrency(parseFloat(account.balance))}{" "}
+                            {account.currency}
+                          </p>
+                        </div>
+                      </Button>
                     ))}
                   </>
                 )}
@@ -244,13 +274,16 @@ export default function TransactionsPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleExport}
-                      disabled={filteredTransactions.length === 0}
-                      className="p-2 rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="flat"
+                      onPress={handleExport}
+                      isDisabled={filteredTransactions.length === 0}
+                      className="rounded-lg hover:bg-secondary"
                     >
                       <Download className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </m.div>
 
@@ -273,17 +306,17 @@ export default function TransactionsPage() {
                   <div className="flex gap-2 flex-wrap">
                     {(["ALL", "INCOME", "EXPENSE", "TRANSFER"] as const).map(
                       (type) => (
-                        <Chip
+                        <Button
                           key={type}
-                          onClick={() => setFilterType(type)}
+                          size="sm"
                           variant={filterType === type ? "solid" : "bordered"}
                           color={filterType === type ? "primary" : "default"}
-                          className="cursor-pointer"
+                          onPress={() => setFilterType(type)}
                         >
                           {type === "ALL"
                             ? "All"
                             : type.charAt(0) + type.slice(1).toLowerCase()}
-                        </Chip>
+                        </Button>
                       )
                     )}
                   </div>
@@ -313,13 +346,13 @@ export default function TransactionsPage() {
                         ? "Try adjusting your filters"
                         : "Create your first transaction to get started"}
                     </p>
-                    <button
-                      onClick={() => setIsTransactionModalOpen(true)}
-                      className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                    <Button
+                      color="primary"
+                      onPress={() => setIsTransactionModalOpen(true)}
+                      startContent={<Plus className="w-4 h-4" />}
                     >
-                      <Plus className="w-4 h-4 inline mr-2" />
                       New Transaction
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -329,6 +362,7 @@ export default function TransactionsPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
+                        onClick={() => setSelectedTransaction(transaction)}
                         className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
                       >
                         <div
@@ -399,6 +433,15 @@ export default function TransactionsPage() {
           isOpen={isTransactionModalOpen}
           onClose={() => setIsTransactionModalOpen(false)}
           defaultAccountId={selectedAccountId || undefined}
+        />
+        <CreateAccountModal
+          isOpen={isAccountModalOpen}
+          onClose={() => setIsAccountModalOpen(false)}
+        />
+        <ViewEditTransactionModal
+          isOpen={!!selectedTransaction}
+          onClose={() => setSelectedTransaction(null)}
+          transaction={selectedTransaction}
         />
       </PageTransition>
     </DashboardLayout>

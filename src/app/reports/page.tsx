@@ -19,9 +19,14 @@ import {
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useMemo, useState } from "react";
-import { Download, Calendar, ChevronDown, FileBarChart } from "lucide-react";
+import {
+  Download,
+  Calendar,
+  ChevronDown,
+  FileBarChart,
+  Plus,
+} from "lucide-react";
 import { DateRangePicker, Button } from "@heroui/react";
-import { parseDate, getLocalTimeZone, today } from "@internationalized/date";
 
 function ChartSkeleton() {
   return (
@@ -250,6 +255,14 @@ export default function ReportsPage() {
           description="Detailed analytics and insights from your real transaction data"
         >
           <div className="flex flex-wrap items-center gap-2">
+            {/* <Button
+              startContent={<Plus className="w-4 h-4" />}
+              color="default"
+              variant="bordered"
+              size="sm"
+            >
+              Add Account
+            </Button> */}
             <DateRangePicker
               label="Date Range"
               variant="bordered"

@@ -93,11 +93,11 @@ export function CreateTransactionModal({
         response?: { data?: { message?: string } };
         message?: string;
       };
-      setError(
+      const errorMessage =
         error.response?.data?.message ||
-          error.message ||
-          "Failed to create transaction"
-      );
+        error.message ||
+        "Failed to create transaction";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -229,9 +229,10 @@ export function CreateTransactionModal({
                     }}
                     isRequired
                     selectionMode="single"
+                    disallowEmptySelection
                   >
                     {activeAccounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
+                      <SelectItem key={account.id} textValue={account.name}>
                         {account.name} ({account.currency} {account.balance})
                       </SelectItem>
                     ))}
@@ -252,9 +253,10 @@ export function CreateTransactionModal({
                     }}
                     isRequired
                     selectionMode="single"
+                    disallowEmptySelection
                   >
                     {activeAccounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
+                      <SelectItem key={account.id} textValue={account.name}>
                         {account.name} ({account.currency} {account.balance})
                       </SelectItem>
                     ))}
@@ -276,9 +278,10 @@ export function CreateTransactionModal({
                       }}
                       isRequired
                       selectionMode="single"
+                      disallowEmptySelection
                     >
                       {activeAccounts.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
+                        <SelectItem key={account.id} textValue={account.name}>
                           {account.name} ({account.currency} {account.balance})
                         </SelectItem>
                       ))}
@@ -296,12 +299,13 @@ export function CreateTransactionModal({
                       }}
                       isRequired
                       selectionMode="single"
+                      disallowEmptySelection
                       disabledKeys={
                         fromAccountId ? new Set([fromAccountId]) : new Set()
                       }
                     >
                       {activeAccounts.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
+                        <SelectItem key={account.id} textValue={account.name}>
                           {account.name} ({account.currency} {account.balance})
                         </SelectItem>
                       ))}
