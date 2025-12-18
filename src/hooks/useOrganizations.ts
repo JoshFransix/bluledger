@@ -29,12 +29,33 @@ export function useOrganizations() {
   const currentOrgId = organizationService.getCurrentOrgId();
   const currentOrg = organizations.find((org) => org.id === currentOrgId);
 
-  // Auto-select first organization if none is selected
+  // Auto-select first organization if none is selected or if current org is no longer accessible
   useEffect(() => {
-    if (!isLoading && organizations.length > 0 && !currentOrgId) {
-      organizationService.setCurrentOrg(organizations[0].id);
+    if (!isLoading && organizations.length > 0) {
+      if (!currentOrgId) {
+        // No org selected, select first one
+        organizationService.setCurrentOrg(organizations[0].id);
+      } else if (!currentOrg) {
+        // Current org not found in the list (user lost access), switch to first available
+        organizationService.setCurrentOrg(organizations[0].id);
+        // Invalidate all queries to refresh with new org
+        queryClient.invalidateQueries();
+      }
     }
-  }, [organizations, currentOrgId, isLoading]);
+  }, [organizations, currentOrgId, currentOrg, isLoading, queryClient]);
+
+  // Listen for organization access loss events
+  useEffect(() => {
+    const handleAccessLoss = () => {
+      // Re-fetch organizations to get the current list
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('orgAccessLost', handleAccessLoss);
+      return () => window.removeEventListener('orgAccessLost', handleAccessLoss);
+    }
+  }, [queryClient]);
 
   const setCurrentOrg = (orgId: string) => {
     organizationService.setCurrentOrg(orgId);

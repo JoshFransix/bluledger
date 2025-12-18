@@ -40,6 +40,18 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // If 403 and it's an organization access error, clear the org and let app auto-switch
+    if (error.response?.status === 403 && error.response?.data?.message?.includes('do not have access')) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('currentOrgId');
+        // Dispatch custom event to notify the app of access loss
+        window.dispatchEvent(new CustomEvent('orgAccessLost'));
+        // Reload queries to re-attempt with new org
+        window.location.reload();
+      }
+      return Promise.reject(error);
+    }
+
     // If 401 and not already retried
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;

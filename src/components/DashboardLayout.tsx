@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { Sidebar } from "@/components/ui/Sidebar";
 import { Navbar } from "@/components/ui/Navbar";
+import { OrgAccessLostBanner } from "@/components/ui/OrgAccessLostBanner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { X } from "lucide-react";
 
@@ -44,6 +45,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
   return (
     <ProtectedRoute>
+      <OrgAccessLostBanner />
       <div className="min-h-screen bg-background">
         {/* Desktop Sidebar - Fixed */}
         <div className="hidden lg:block">
