@@ -10,7 +10,7 @@ import { useOrganizations } from "@/hooks/useOrganizations";
 import { CreateTransactionModal } from "@/components/modals/CreateTransactionModal";
 import { CreateAccountModal } from "@/components/modals/CreateAccountModal";
 import { ViewEditTransactionModal } from "@/components/modals/ViewEditTransactionModal";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Plus,
@@ -25,7 +25,7 @@ import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { m } from "framer-motion";
 import { Input, Button } from "@heroui/react";
 
-export default function TransactionsPage() {
+function TransactionsContent() {
   const searchParams = useSearchParams();
   const { transactions, isLoading: transactionsLoading } = useTransactions();
   const { accounts, isLoading: accountsLoading } = useAccounts();
@@ -454,5 +454,13 @@ export default function TransactionsPage() {
         />
       </PageTransition>
     </DashboardLayout>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TransactionsContent />
+    </Suspense>
   );
 }
