@@ -75,8 +75,10 @@ export function CreateTransactionModal({
         description: description || undefined,
         category: category || undefined,
         date: date || new Date().toISOString(),
-        fromAccountId: fromAccountId || undefined,
-        toAccountId: toAccountId || undefined,
+        fromAccountId:
+          transactionType === "INCOME" ? undefined : fromAccountId || undefined,
+        toAccountId:
+          transactionType === "EXPENSE" ? undefined : toAccountId || undefined,
       });
 
       onSuccess?.();
@@ -195,6 +197,9 @@ export function CreateTransactionModal({
                   onSelectionChange={(keys) => {
                     const selected = Array.from(keys)[0] as TransactionType;
                     setTransactionType(selected);
+                    // Clear account selections when changing type
+                    setFromAccountId("");
+                    setToAccountId("");
                   }}
                   isRequired
                 >
