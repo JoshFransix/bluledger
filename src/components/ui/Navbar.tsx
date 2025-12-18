@@ -9,6 +9,7 @@ import {
   LogOut,
   Settings as SettingsIcon,
   Calendar,
+  UserPlus,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { SearchModal } from "./SearchModal";
@@ -203,6 +204,14 @@ export function Navbar({ onMenuClick, title = "Dashboard" }: NavbarProps) {
                   className="text-foreground hover:bg-secondary! data-[hover=true]:bg-secondary!"
                 >
                   Settings
+                </DropdownItem>
+                <DropdownItem
+                  key="manage-team"
+                  startContent={<UserPlus className="w-4 h-4" />}
+                  onClick={() => router.push("/settings?tab=team")}
+                  className="text-foreground hover:bg-secondary! data-[hover=true]:bg-secondary!"
+                >
+                  Manage Team
                 </DropdownItem>
                 <DropdownItem
                   key="logout"

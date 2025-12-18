@@ -212,7 +212,7 @@ export function Sidebar({
       )}
 
       {/* Main Navigation */}
-      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-4 px-3 space-y-2 overflow-y-auto">
         <div className="mb-4">
           <AnimatePresence mode="wait">
             {(!isCollapsed || isMobile) && (
@@ -226,15 +226,17 @@ export function Sidebar({
               </m.p>
             )}
           </AnimatePresence>
-          {mainNavItems.map((item) => (
-            <NavItem
-              key={item.href + item.title}
-              item={item}
-              isActive={pathname === item.href}
-              isCollapsed={isCollapsed && !isMobile}
-              onClick={handleNavClick}
-            />
-          ))}
+          <div className="space-y-1">
+            {mainNavItems.map((item) => (
+              <NavItem
+                key={item.href + item.title}
+                item={item}
+                isActive={pathname === item.href}
+                isCollapsed={isCollapsed && !isMobile}
+                onClick={handleNavClick}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="pt-4 border-t border-sidebar-border">
@@ -250,15 +252,17 @@ export function Sidebar({
               </m.p>
             )}
           </AnimatePresence>
-          {secondaryNavItems.map((item) => (
-            <NavItem
-              key={item.href + item.title}
-              item={item}
-              isActive={pathname === item.href}
-              isCollapsed={isCollapsed && !isMobile}
-              onClick={handleNavClick}
-            />
-          ))}
+          <div className="space-y-1">
+            {secondaryNavItems.map((item) => (
+              <NavItem
+                key={item.href + item.title}
+                item={item}
+                isActive={pathname === item.href}
+                isCollapsed={isCollapsed && !isMobile}
+                onClick={handleNavClick}
+              />
+            ))}
+          </div>
         </div>
       </nav>
 

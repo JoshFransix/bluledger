@@ -17,6 +17,7 @@ import { useAccounts } from "@/hooks/useAccounts";
 import { CreateAccountModal } from "@/components/modals/CreateAccountModal";
 import { CreateTransactionModal } from "@/components/modals/CreateTransactionModal";
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 function ChartSkeleton() {
   return (
@@ -51,11 +52,21 @@ function KPISkeleton() {
 }
 
 export default function DashboardPage() {
-  const { transactions, isLoading: transactionsLoading } = useTransactions();
-  const { accounts, isLoading: accountsLoading } = useAccounts();
+  const { transactions, isLoading: transactionsLoading, refetch: refetchTransactions } = useTransactions();
+  const { accounts, isLoading: accountsLoading, refetch: refetchAccounts } = useAccounts();
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([refetchTransactions(), refetchAccounts()]);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  };
 
   const handleExport = () => {
     // Export transactions as CSV
@@ -124,13 +135,20 @@ export default function DashboardPage() {
     );
     const activeAccounts = accounts.filter((a) => a.isActive).length;
 
+    // Calculate net profit change properly
+    const currentNetProfit = currentRevenue - currentExpenses;
+    const previousNetProfit = previousRevenue - previousExpenses;
+    const netProfitChange = previousNetProfit !== 0 
+      ? ((currentNetProfit - previousNetProfit) / Math.abs(previousNetProfit)) * 100
+      : currentNetProfit > 0 ? 100 : 0;
+
     return {
       totalRevenue: {
         value: currentRevenue,
         change:
           previousRevenue > 0
             ? ((currentRevenue - previousRevenue) / previousRevenue) * 100
-            : 0,
+            : currentRevenue > 0 ? 100 : 0,
         trend:
           currentRevenue >= previousRevenue
             ? ("up" as const)
@@ -141,20 +159,20 @@ export default function DashboardPage() {
         change:
           previousExpenses > 0
             ? ((currentExpenses - previousExpenses) / previousExpenses) * 100
-            : 0,
+            : currentExpenses > 0 ? 100 : 0,
         trend:
           currentExpenses <= previousExpenses
             ? ("down" as const)
             : ("up" as const),
       },
       netProfit: {
-        value: currentRevenue - currentExpenses,
-        change: 8.7,
-        trend: "up" as const,
+        value: currentNetProfit,
+        change: isFinite(netProfitChange) ? netProfitChange : 0,
+        trend: currentNetProfit >= previousNetProfit ? ("up" as const) : ("down" as const),
       },
       activeClients: {
         value: activeAccounts,
-        change: 5.2,
+        change: 0, // This should be calculated based on historical account data if available
         trend: "up" as const,
       },
     };
@@ -326,8 +344,15 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Revenue Overview</CardTitle>
-                  <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
-                    <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                  <button 
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    className="p-2 rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={cn(
+                      "w-4 h-4 text-muted-foreground transition-transform duration-500",
+                      isRefreshing && "animate-spin"
+                    )} />
                   </button>
                 </CardHeader>
                 <CardContent>
@@ -342,8 +367,15 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Expenses vs Budget</CardTitle>
-                  <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
-                    <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                  <button 
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    className="p-2 rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={cn(
+                      "w-4 h-4 text-muted-foreground transition-transform duration-500",
+                      isRefreshing && "animate-spin"
+                    )} />
                   </button>
                 </CardHeader>
                 <CardContent>

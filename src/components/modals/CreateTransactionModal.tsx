@@ -220,15 +220,18 @@ export function CreateTransactionModal({
                     label="From Account"
                     variant="bordered"
                     placeholder="Select account..."
-                    selectedKeys={fromAccountId ? [fromAccountId] : []}
+                    selectedKeys={
+                      fromAccountId ? new Set([fromAccountId]) : new Set()
+                    }
                     onSelectionChange={(keys) => {
                       const selected = Array.from(keys)[0] as string;
-                      setFromAccountId(selected);
+                      setFromAccountId(selected || "");
                     }}
                     isRequired
+                    selectionMode="single"
                   >
                     {activeAccounts.map((account) => (
-                      <SelectItem key={account.id}>
+                      <SelectItem key={account.id} value={account.id}>
                         {account.name} ({account.currency} {account.balance})
                       </SelectItem>
                     ))}
@@ -240,15 +243,18 @@ export function CreateTransactionModal({
                     label="To Account"
                     variant="bordered"
                     placeholder="Select account..."
-                    selectedKeys={toAccountId ? [toAccountId] : []}
+                    selectedKeys={
+                      toAccountId ? new Set([toAccountId]) : new Set()
+                    }
                     onSelectionChange={(keys) => {
                       const selected = Array.from(keys)[0] as string;
-                      setToAccountId(selected);
+                      setToAccountId(selected || "");
                     }}
                     isRequired
+                    selectionMode="single"
                   >
                     {activeAccounts.map((account) => (
-                      <SelectItem key={account.id}>
+                      <SelectItem key={account.id} value={account.id}>
                         {account.name} ({account.currency} {account.balance})
                       </SelectItem>
                     ))}
@@ -261,15 +267,18 @@ export function CreateTransactionModal({
                       label="From Account"
                       variant="bordered"
                       placeholder="Select account..."
-                      selectedKeys={fromAccountId ? [fromAccountId] : []}
+                      selectedKeys={
+                        fromAccountId ? new Set([fromAccountId]) : new Set()
+                      }
                       onSelectionChange={(keys) => {
                         const selected = Array.from(keys)[0] as string;
-                        setFromAccountId(selected);
+                        setFromAccountId(selected || "");
                       }}
                       isRequired
+                      selectionMode="single"
                     >
                       {activeAccounts.map((account) => (
-                        <SelectItem key={account.id}>
+                        <SelectItem key={account.id} value={account.id}>
                           {account.name} ({account.currency} {account.balance})
                         </SelectItem>
                       ))}
@@ -278,15 +287,21 @@ export function CreateTransactionModal({
                       label="To Account"
                       variant="bordered"
                       placeholder="Select account..."
-                      selectedKeys={toAccountId ? [toAccountId] : []}
+                      selectedKeys={
+                        toAccountId ? new Set([toAccountId]) : new Set()
+                      }
                       onSelectionChange={(keys) => {
                         const selected = Array.from(keys)[0] as string;
-                        setToAccountId(selected);
+                        setToAccountId(selected || "");
                       }}
                       isRequired
+                      selectionMode="single"
+                      disabledKeys={
+                        fromAccountId ? new Set([fromAccountId]) : new Set()
+                      }
                     >
                       {activeAccounts.map((account) => (
-                        <SelectItem key={account.id}>
+                        <SelectItem key={account.id} value={account.id}>
                           {account.name} ({account.currency} {account.balance})
                         </SelectItem>
                       ))}

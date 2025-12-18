@@ -106,7 +106,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           <Navbar onMenuClick={() => setMobileMenuOpen(true)} title={title} />
           <m.main
             layout
-            className="flex-1 p-4 lg:p-6 xl:p-8 overflow-y-auto overflow-x-hidden"
+            className="flex-1 p-4 lg:p-6 xl:p-8 pb-8 lg:pb-12 overflow-y-auto overflow-x-hidden"
           >
             {children}
           </m.main>
