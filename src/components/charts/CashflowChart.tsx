@@ -110,13 +110,16 @@ export function CashflowChart({ data }: CashflowChartProps) {
               fontWeight: 600,
               marginBottom: 4,
             }}
-            formatter={(value: number | undefined, name: string) => {
+            formatter={(value: number | undefined, name: string | undefined) => {
               const labels: Record<string, string> = {
                 inflow: "Cash Inflow",
                 outflow: "Cash Outflow",
                 net: "Net Cashflow",
               };
-              return [`$${(value || 0).toLocaleString()}`, labels[name] || name];
+              return [
+                `$${(value || 0).toLocaleString()}`,
+                labels[name || ""] || name || "",
+              ];
             }}
             cursor={{
               fill: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",

@@ -102,8 +102,8 @@ export function RevenueChart({ data }: RevenueChartProps) {
               fontWeight: 600,
               marginBottom: 4,
             }}
-            formatter={(value: number, name: string) => [
-              `$${value.toLocaleString()}`,
+            formatter={(value: number | undefined, name: string | undefined) => [
+              `$${(value || 0).toLocaleString()}`,
               name === "revenue" ? "Revenue" : "Target",
             ]}
           />
