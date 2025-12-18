@@ -15,7 +15,7 @@ import {
   useOrganizationSummary,
 } from "@/hooks/useOrganizations";
 import { useAuth } from "@/hooks/useAuth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import {
   User,
   Building,
@@ -32,7 +32,7 @@ import { Input, Button, Select, SelectItem, Tabs, Tab } from "@heroui/react";
 import { useSearchParams } from "next/navigation";
 import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
 
-export default function SettingsPage() {
+function SettingsContent() {
   const searchParams = useSearchParams();
   const activeTab = searchParams?.get("tab") || "organization";
 
@@ -715,5 +715,13 @@ export default function SettingsPage() {
         }}
       />
     </DashboardLayout>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SettingsContent />
+    </Suspense>
   );
 }

@@ -99,10 +99,10 @@ export function ExpensesCategoryChart({ data }: ExpensesCategoryChartProps) {
               borderRadius: "12px",
               boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
             }}
-            formatter={(value: number | undefined, name: string | undefined) => [
-              `$${(value || 0).toLocaleString()}`,
-              name || "",
-            ]}
+            formatter={(
+              value: number | undefined,
+              name: string | undefined
+            ) => [`$${(value || 0).toLocaleString()}`, name || ""]}
           />
           <Legend
             layout="vertical"

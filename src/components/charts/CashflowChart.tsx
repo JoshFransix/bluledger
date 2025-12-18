@@ -110,7 +110,10 @@ export function CashflowChart({ data }: CashflowChartProps) {
               fontWeight: 600,
               marginBottom: 4,
             }}
-            formatter={(value: number | undefined, name: string | undefined) => {
+            formatter={(
+              value: number | undefined,
+              name: string | undefined
+            ) => {
               const labels: Record<string, string> = {
                 inflow: "Cash Inflow",
                 outflow: "Cash Outflow",
