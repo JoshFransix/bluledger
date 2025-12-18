@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { Input, Button, Select, SelectItem, Tabs, Tab } from "@heroui/react";
 import { useSearchParams } from "next/navigation";
+import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
@@ -57,6 +58,15 @@ export default function SettingsPage() {
   } | null>(null);
   const [members, setMembers] = useState<any[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<string | null>(null);
+
+  // Sync orgName with currentOrg when organization changes
+  useEffect(() => {
+    if (currentOrg?.name) {
+      setOrgName(currentOrg.name);
+    }
+  }, [currentOrg?.id, currentOrg?.name]);
 
   useEffect(() => {
     if (activeTab === "team" && currentOrgId) {
@@ -132,15 +142,17 @@ export default function SettingsPage() {
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    if (
-      !currentOrgId ||
-      !confirm("Are you sure you want to remove this member?")
-    )
-      return;
+    if (!currentOrgId) return;
+    setMemberToDelete(memberId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmRemoveMember = async () => {
+    if (!currentOrgId || !memberToDelete) return;
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/organizations/${currentOrgId}/members/${memberId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/organizations/${currentOrgId}/members/${memberToDelete}`,
         {
           method: "DELETE",
           headers: {
@@ -150,6 +162,8 @@ export default function SettingsPage() {
       );
 
       if (response.ok) {
+        setDeleteConfirmOpen(false);
+        setMemberToDelete(null);
         fetchMembers();
       }
     } catch (error) {
@@ -707,6 +721,20 @@ export default function SettingsPage() {
           </div>
         )}
       </PageTransition>
+
+      <ConfirmationModal
+        isOpen={deleteConfirmOpen}
+        title="Remove Team Member"
+        message="Are you sure you want to remove this member from the organization? This action cannot be undone."
+        confirmText="Remove"
+        cancelText="Cancel"
+        isDangerous={true}
+        onConfirm={confirmRemoveMember}
+        onCancel={() => {
+          setDeleteConfirmOpen(false);
+          setMemberToDelete(null);
+        }}
+      />
     </DashboardLayout>
   );
 }
