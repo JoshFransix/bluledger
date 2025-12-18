@@ -200,7 +200,7 @@ export function Sidebar({
                   list: "p-1",
                 }}
               >
-                {organizations.map((org) => (
+                {organizations.map((org: any) => (
                   <DropdownItem
                     key={org.id}
                     textValue={org.name}

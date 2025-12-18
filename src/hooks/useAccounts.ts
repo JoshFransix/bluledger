@@ -35,10 +35,15 @@ export function useAccounts() {
     },
   });
 
+  const refetch = async () => {
+    await queryClient.refetchQueries({ queryKey: ['accounts'] });
+  };
+
   return {
     accounts,
     isLoading,
     error,
+    refetch,
     createAccount: createMutation.mutateAsync,
     updateAccount: updateMutation.mutateAsync,
     deleteAccount: deleteMutation.mutateAsync,

@@ -90,7 +90,7 @@ export default function DashboardPage() {
   const handleExport = () => {
     // Export transactions as CSV
     const headers = ["Date", "Description", "Type", "Category", "Amount"];
-    const csvData = transactions.map((t) => [
+    const csvData = transactions.map((t: any) => [
       new Date(t.date).toLocaleDateString(),
       t.description || "",
       t.type,
@@ -100,7 +100,7 @@ export default function DashboardPage() {
 
     const csvContent = [
       headers.join(","),
-      ...csvData.map((row) => row.join(",")),
+      ...csvData.map((row: any[]) => row.join(",")),
     ].join("\\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -122,9 +122,9 @@ export default function DashboardPage() {
     );
 
     const currentMonthTransactions = transactions.filter(
-      (t) => new Date(t.date) >= lastMonth
+      (t: any) => new Date(t.date) >= lastMonth
     );
-    const previousMonthTransactions = transactions.filter((t) => {
+    const previousMonthTransactions = transactions.filter((t: any) => {
       const d = new Date(t.date);
       return (
         d >= new Date(now.getFullYear(), now.getMonth() - 2, now.getDate()) &&
@@ -133,26 +133,26 @@ export default function DashboardPage() {
     });
 
     const currentRevenue = currentMonthTransactions
-      .filter((t) => t.type === "INCOME")
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: any) => t.type === "INCOME")
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
 
     const previousRevenue = previousMonthTransactions
-      .filter((t) => t.type === "INCOME")
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: any) => t.type === "INCOME")
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
 
     const currentExpenses = currentMonthTransactions
-      .filter((t) => t.type === "EXPENSE")
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: any) => t.type === "EXPENSE")
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
 
     const previousExpenses = previousMonthTransactions
-      .filter((t) => t.type === "EXPENSE")
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: any) => t.type === "EXPENSE")
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
 
     const totalBalance = accounts.reduce(
-      (sum, a) => sum + parseFloat(a.balance),
+      (sum: number, a: any) => sum + parseFloat(a.balance),
       0
     );
-    const activeAccounts = accounts.filter((a) => a.isActive).length;
+    const activeAccounts = accounts.filter((a: any) => a.isActive).length;
 
     // Calculate net profit change properly
     const currentNetProfit = currentRevenue - currentExpenses;
@@ -214,8 +214,8 @@ export default function DashboardPage() {
     const monthlyData: Record<string, number> = {};
 
     transactions
-      .filter((t) => t.type === "INCOME")
-      .forEach((t) => {
+      .filter((t: any) => t.type === "INCOME")
+      .forEach((t: any) => {
         const date = new Date(t.date);
         const monthKey = date.toLocaleString("default", {
           month: "short",
@@ -240,8 +240,8 @@ export default function DashboardPage() {
       {};
 
     transactions
-      .filter((t) => t.type === "EXPENSE")
-      .forEach((t) => {
+      .filter((t: any) => t.type === "EXPENSE")
+      .forEach((t: any) => {
         const date = new Date(t.date);
         const monthKey = date.toLocaleString("default", { month: "short" });
         if (!monthlyData[monthKey]) {
@@ -263,7 +263,7 @@ export default function DashboardPage() {
       { month: string; inflow: number; outflow: number; net: number }
     > = {};
 
-    transactions.forEach((t) => {
+    transactions.forEach((t: any) => {
       const date = new Date(t.date);
       const monthKey = date.toLocaleString("default", { month: "short" });
 
@@ -293,7 +293,7 @@ export default function DashboardPage() {
 
   // Format transactions for display
   const formattedTransactions = useMemo(() => {
-    return transactions.slice(0, 10).map((t) => ({
+    return transactions.slice(0, 10).map((t: any) => ({
       id: t.id,
       description: t.description || `${t.type} Transaction`,
       amount: parseFloat(t.amount),

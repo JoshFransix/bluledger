@@ -57,7 +57,7 @@ export default function ReportsPage() {
       dateRange.end.day
     );
 
-    return transactions.filter((t) => {
+    return transactions.filter((t: any) => {
       const txDate = new Date(t.date);
       return txDate >= startDate && txDate <= endDate;
     });
@@ -73,30 +73,30 @@ export default function ReportsPage() {
     );
 
     const currentYearTransactions = filteredTransactions.filter(
-      (t) => new Date(t.date) >= lastYear
+      (t: any) => new Date(t.date) >= lastYear
     );
     const previousYearStart = new Date(lastYear);
     previousYearStart.setFullYear(previousYearStart.getFullYear() - 1);
     const previousYearTransactions = filteredTransactions.filter(
-      (t) =>
+      (t: any) =>
         new Date(t.date) >= previousYearStart && new Date(t.date) < lastYear
     );
 
     const currentRevenue = currentYearTransactions
-      .filter((t) => t.type === "INCOME")
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: any) => t.type === "INCOME")
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
 
     const previousRevenue = previousYearTransactions
-      .filter((t) => t.type === "INCOME")
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: any) => t.type === "INCOME")
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
 
     const currentExpenses = currentYearTransactions
-      .filter((t) => t.type === "EXPENSE")
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: any) => t.type === "EXPENSE")
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
 
     const previousExpenses = previousYearTransactions
-      .filter((t) => t.type === "EXPENSE")
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: any) => t.type === "EXPENSE")
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
 
     const netProfit = currentRevenue - currentExpenses;
     const previousNetProfit = previousRevenue - previousExpenses;
@@ -138,8 +138,8 @@ export default function ReportsPage() {
   const revenueData = useMemo(() => {
     const monthlyData: Record<string, number> = {};
     filteredTransactions
-      .filter((t) => t.type === "INCOME")
-      .forEach((t) => {
+      .filter((t: any) => t.type === "INCOME")
+      .forEach((t: any) => {
         const date = new Date(t.date);
         const monthKey = date.toLocaleString("default", { month: "short" });
         monthlyData[monthKey] =
@@ -160,8 +160,8 @@ export default function ReportsPage() {
     const monthlyData: Record<string, { expenses: number; budget: number }> =
       {};
     filteredTransactions
-      .filter((t) => t.type === "EXPENSE")
-      .forEach((t) => {
+      .filter((t: any) => t.type === "EXPENSE")
+      .forEach((t: any) => {
         const date = new Date(t.date);
         const monthKey = date.toLocaleString("default", { month: "short" });
         if (!monthlyData[monthKey]) {
@@ -180,15 +180,15 @@ export default function ReportsPage() {
   const expensesByCategory = useMemo(() => {
     const categoryData: Record<string, number> = {};
     filteredTransactions
-      .filter((t) => t.type === "EXPENSE")
-      .forEach((t) => {
+      .filter((t: any) => t.type === "EXPENSE")
+      .forEach((t: any) => {
         const category = t.category || "Uncategorized";
         categoryData[category] =
           (categoryData[category] || 0) + parseFloat(t.amount);
       });
 
     const totalExpenses = Object.values(categoryData).reduce(
-      (sum, amount) => sum + amount,
+      (sum: number, amount: number) => sum + amount,
       0
     );
 
@@ -208,7 +208,7 @@ export default function ReportsPage() {
       string,
       { month: string; inflow: number; outflow: number; net: number }
     > = {};
-    filteredTransactions.forEach((t) => {
+    filteredTransactions.forEach((t: any) => {
       const date = new Date(t.date);
       const monthKey = date.toLocaleString("default", { month: "short" });
 

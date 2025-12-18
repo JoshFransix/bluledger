@@ -49,14 +49,14 @@ export default function TransactionsPage() {
     const accountIdFromUrl = searchParams.get("accountId");
     if (
       accountIdFromUrl &&
-      accounts.some((acc) => acc.id === accountIdFromUrl)
+      accounts.some((acc: any) => acc.id === accountIdFromUrl)
     ) {
       setSelectedAccountId(accountIdFromUrl);
     }
   }, [searchParams, accounts]);
 
   const selectedAccount = useMemo(() => {
-    return accounts.find((acc) => acc.id === selectedAccountId);
+    return accounts.find((acc: any) => acc.id === selectedAccountId);
   }, [accounts, selectedAccountId]);
 
   const filteredTransactions = useMemo(() => {
@@ -65,7 +65,7 @@ export default function TransactionsPage() {
     // Filter by account
     if (selectedAccountId) {
       filtered = filtered.filter(
-        (t) =>
+        (t: any) =>
           t.fromAccountId === selectedAccountId ||
           t.toAccountId === selectedAccountId
       );
@@ -73,20 +73,20 @@ export default function TransactionsPage() {
 
     // Filter by type
     if (filterType !== "ALL") {
-      filtered = filtered.filter((t) => t.type === filterType);
+      filtered = filtered.filter((t: any) => t.type === filterType);
     }
 
     // Filter by search
     if (searchQuery) {
       filtered = filtered.filter(
-        (t) =>
+        (t: any) =>
           t.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           t.category?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     return filtered.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   }, [transactions, selectedAccountId, filterType, searchQuery]);
 
@@ -100,7 +100,7 @@ export default function TransactionsPage() {
       "Amount",
       "Account",
     ];
-    const csvData = filteredTransactions.map((t) => {
+    const csvData = filteredTransactions.map((t: any) => {
       const account = selectedAccount?.name || "Multiple";
       return [
         new Date(t.date).toLocaleDateString(),
@@ -114,7 +114,7 @@ export default function TransactionsPage() {
 
     const csvContent = [
       headers.join(","),
-      ...csvData.map((row) => row.join(",")),
+      ...csvData.map((row: any[]) => row.join(",")),
     ].join("\\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -208,14 +208,14 @@ export default function TransactionsPage() {
                         <p className="text-xs text-muted-foreground">
                           {formatCurrency(
                             accounts.reduce(
-                              (sum, acc) => sum + parseFloat(acc.balance),
+                              (sum: number, acc: any) => sum + parseFloat(acc.balance),
                               0
                             )
                           )}
                         </p>
                       </div>
                     </Button>
-                    {accounts.map((account) => (
+                    {accounts.map((account: any) => (
                       <Button
                         key={account.id}
                         onPress={() => setSelectedAccountId(account.id)}
@@ -356,7 +356,7 @@ export default function TransactionsPage() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {filteredTransactions.map((transaction, index) => (
+                    {filteredTransactions.map((transaction: any, index: number) => (
                       <m.div
                         key={transaction.id}
                         initial={{ opacity: 0, y: 20 }}

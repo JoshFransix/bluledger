@@ -54,7 +54,7 @@ export function CreateTransactionModal({
     parseDate(new Date().toISOString().split("T")[0])
   );
 
-  const activeAccounts = accounts.filter((acc) => acc.isActive);
+  const activeAccounts = accounts.filter((acc: any) => acc.isActive);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -236,7 +236,7 @@ export function CreateTransactionModal({
                     selectionMode="single"
                     disallowEmptySelection
                   >
-                    {activeAccounts.map((account) => (
+                    {activeAccounts.map((account: any) => (
                       <SelectItem key={account.id} textValue={account.name}>
                         {account.name} ({account.currency} {account.balance})
                       </SelectItem>
@@ -277,15 +277,15 @@ export function CreateTransactionModal({
                       selectedKeys={
                         fromAccountId ? new Set([fromAccountId]) : new Set()
                       }
-                      onSelectionChange={(keys) => {
-                        const selected = Array.from(keys)[0] as string;
+                      onSelectionChange={(keys: any) => {
+                        const selected = Array.from(keys as any)[0] as string;
                         setFromAccountId(selected || "");
                       }}
                       isRequired
                       selectionMode="single"
                       disallowEmptySelection
                     >
-                      {activeAccounts.map((account) => (
+                      {activeAccounts.map((account: any) => (
                         <SelectItem key={account.id} textValue={account.name}>
                           {account.name} ({account.currency} {account.balance})
                         </SelectItem>
@@ -298,8 +298,8 @@ export function CreateTransactionModal({
                       selectedKeys={
                         toAccountId ? new Set([toAccountId]) : new Set()
                       }
-                      onSelectionChange={(keys) => {
-                        const selected = Array.from(keys)[0] as string;
+                      onSelectionChange={(keys: any) => {
+                        const selected = Array.from(keys as any)[0] as string;
                         setToAccountId(selected || "");
                       }}
                       isRequired
@@ -309,7 +309,7 @@ export function CreateTransactionModal({
                         fromAccountId ? new Set([fromAccountId]) : new Set()
                       }
                     >
-                      {activeAccounts.map((account) => (
+                      {activeAccounts.map((account: any) => (
                         <SelectItem key={account.id} textValue={account.name}>
                           {account.name} ({account.currency} {account.balance})
                         </SelectItem>
@@ -342,14 +342,16 @@ export function CreateTransactionModal({
                   label="Transaction Date"
                   variant="bordered"
                   value={dateValue}
-                  onChange={(value) => {
+                  onChange={(value: any) => {
                     setDateValue(value);
-                    setDate(
-                      `${value.year}-${String(value.month).padStart(
-                        2,
-                        "0"
-                      )}-${String(value.day).padStart(2, "0")}`
-                    );
+                    if (value) {
+                      setDate(
+                        `${value.year}-${String(value.month).padStart(
+                          2,
+                          "0"
+                        )}-${String(value.day).padStart(2, "0")}`
+                      );
+                    }
                   }}
                   showMonthAndYearPickers
                   classNames={{

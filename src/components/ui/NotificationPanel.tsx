@@ -72,7 +72,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
     });
 
     // Low balance alerts
-    accounts.forEach((account) => {
+    accounts.forEach((account: any) => {
       const balance = parseFloat(account.balance);
       if (balance < 1000 && account.isActive) {
         notifs.push({
@@ -189,7 +189,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                             notification.type === "transaction"
                               ? "bg-primary/10 text-primary"
                               : notification.type === "alert"
@@ -205,7 +205,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                               {notification.title}
                             </p>
                             {!notification.read && (
-                              <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-1" />
+                              <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mb-1">

@@ -38,10 +38,15 @@ export function useTransactions() {
     },
   });
 
+  const refetch = async () => {
+    await queryClient.refetchQueries({ queryKey: ['transactions'] });
+  };
+
   return {
     transactions,
     isLoading,
     error,
+    refetch,
     createTransaction: createMutation.mutateAsync,
     updateTransaction: updateMutation.mutateAsync,
     deleteTransaction: deleteMutation.mutateAsync,

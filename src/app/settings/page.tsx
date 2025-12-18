@@ -393,7 +393,7 @@ export default function SettingsPage() {
                               Members
                             </p>
                             <p className="text-lg font-semibold">
-                              {summary.stats?.membersCount ?? 0}
+                              {summary?.membersCount ?? 0}
                             </p>
                           </div>
                         </div>
