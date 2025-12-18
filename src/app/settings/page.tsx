@@ -440,22 +440,14 @@ export default function SettingsPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      {summary.balances &&
-                      Object.keys(summary.balances).length > 0 ? (
+                      {summary ? (
                         <>
                           <div>
                             <p className="text-xs text-muted-foreground mb-1">
                               Total Assets
                             </p>
                             <p className="text-xl font-bold text-emerald-600">
-                              {Object.entries(summary.balances).map(
-                                ([currency, data]: [string, any]) => (
-                                  <span key={currency} className="block">
-                                    {formatCurrency(data.assets || 0)}{" "}
-                                    {currency}
-                                  </span>
-                                )
-                              )}
+                              {formatCurrency(summary.totalAssets || 0)}
                             </p>
                           </div>
 
@@ -464,14 +456,7 @@ export default function SettingsPage() {
                               Total Liabilities
                             </p>
                             <p className="text-xl font-bold text-rose-600">
-                              {Object.entries(summary.balances).map(
-                                ([currency, data]: [string, any]) => (
-                                  <span key={currency} className="block">
-                                    {formatCurrency(data.liabilities || 0)}{" "}
-                                    {currency}
-                                  </span>
-                                )
-                              )}
+                              {formatCurrency(summary.totalLiabilities || 0)}
                             </p>
                           </div>
 
@@ -480,13 +465,7 @@ export default function SettingsPage() {
                               Net Worth
                             </p>
                             <p className="text-2xl font-bold text-primary">
-                              {Object.entries(summary.netWorth || {}).map(
-                                ([currency, value]: [string, any]) => (
-                                  <span key={currency} className="block">
-                                    {formatCurrency(value || 0)} {currency}
-                                  </span>
-                                )
-                              )}
+                              {formatCurrency(summary.netWorth || 0)}
                             </p>
                           </div>
                         </>
